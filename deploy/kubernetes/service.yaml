@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-boilerplate-service
+  namespace: backend-boilerplate
+spec:
+  selector:
+    app: backend-boilerplate
+  ports:
+  - protocol: TCP
+    targetPort: 80
+    port: 80

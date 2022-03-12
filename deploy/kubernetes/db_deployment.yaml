@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb
+  namespace: backend-boilerplate
+  labels:
+    app: mariadb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      annotations:
+        vault.hashicorp.com/agent-inject: 'true'
+        vault.hashicorp.com/role: 'backend-boilerplate-mariadb'
+        vault.hashicorp.com/log-level: 'debug'
+        vault.hashicorp.com/agent-inject-status: 'update'
+        vault.hashicorp.com/agent-inject-secret-rootpass: 'secret/backend-boilerplate/mariadb'
+        vault.hashicorp.com/agent-inject-template-rootpass: |
+          {{- with secret "secret/backend-boilerplate/mariadb" -}}
+          {{ .Data.root_pass }}
+          {{- end -}}
+        vault.hashicorp.com/agent-inject-secret-db: 'secret/backend-boilerplate/mariadb'
+        vault.hashicorp.com/agent-inject-template-db: |
+          {{- with secret "secret/backend-boilerplate/mariadb" -}}
+          {{ .Data.db }}
+          {{- end -}}
+      labels:
+        app: mariadb
+    spec:
+      serviceAccountName: backend-boilerplate-mariadb
+      containers:
+      - name: mariadb
+        image: mariadb:10.7.1-focal
+        ports:
+          - containerPort: 3306
+        env:
+        - name: MARIADB_ROOT_PASSWORD_FILE
+          value: /vault/secrets/rootpass
+        - name: MARIADB_DATABASE_FILE
+          value:  /vault/secrets/db

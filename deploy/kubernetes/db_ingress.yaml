@@ -1,0 +1,25 @@
+# ### TODO: implement certs so that vault can manage users i guess ¯\_(ツ)_/¯
+# apiVersion: networking.k8s.io/v1beta1
+# kind: Ingress
+# metadata:
+#   name: backend-boilerplate-mariadb-ingress
+#   namespace: backend-boilerplate
+#   annotations:
+#     kubernetes.io/ingress.class: nginx
+#     # cert-manager.io/cluster-issuer: ca-issuer
+#     ingress.kubernetes.io/force-ssl-redirect: "false"
+#     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+#     nginx.ingress.kubernetes.io/server-alias: db.backend-boilerplate.tiannaru.xyz
+# spec:
+#   rules:
+#     - host: db.backend-boilerplate.tiannaru.xyz
+#       http:
+#         paths:
+#           - path: /
+#             backend:
+#               serviceName: mariadb-service
+#               servicePort: 3306
+#   # tls:
+#   #   - hosts:
+#   #     - db.backend-boilerplate.tiannaru.xyz
+#   #     secretName: backend-boilerplate-mariadb-tls

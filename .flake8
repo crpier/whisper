@@ -1,0 +1,4 @@
+[flake8]
+/* TODO: put this in pyproject.toml instead */
+max-line-length = 88
+exclude = .git,__pycache__,__init__.py,.mypy_cache,.pytest_cache
