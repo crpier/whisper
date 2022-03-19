@@ -28,6 +28,7 @@ mock = "^4.0.3"
 PyMySQL = "^1.0.2"
 alembic = "^1.7.6"
 types-mock = "^4.0.10"
+sqlalchemy2-stubs = "^0.0.2-alpha.20"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.931"
