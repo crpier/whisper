@@ -2,9 +2,10 @@ from typing import List, NewType, Optional
 from dataclasses import dataclass
 from queue import Queue
 
-user_id = NewType(str)
-station_id = NewType(str)
-playlist_id = NewType(str)
+user_id = NewType("user_id", str)
+station_id = NewType("station_id", str)
+playlist_id = NewType("playlist_id", str)
+
 
 @dataclass(frozen=True)
 class Song:
@@ -22,50 +23,57 @@ class Playlist:
 
 
 class StationQueue:
-    _queue: Queue
+    def __init__(self, playlist: Playlist | None = None) -> None:
+        new_queue = Queue()
+        if playlist:
+            for song in playlist.songs:
+                new_queue.put(song)
+        self._queue = new_queue
 
     @property
-    def current_song() -> Optional[Song]:
-        return NotImplementedError
+    def current_song(self) -> Optional[Song]:
+        try:
+            return self._queue.queue[0]
+        except IndexError:
+            return None
 
     @property
     def queue_list(self):
-        return list(self._queue)
+        return list(self._queue.queue)
 
-    @classmethod
-    def from_playlist(cls, playlist: Playlist):
-        print(playlist)
-        return NotImplementedError
+    def append(self, song: Song):
+        self._queue.put(song)
 
-    def append(song: Song):
-        return NotImplementedError
+    def clear(self):
+        while not self._queue.empty():
+            self._queue.get()
 
-    def clear():
-        return NotImplementedError
-
-    def update_next_songs(songs: List[Song]):
-        return NotImplementedError
+    def update_next_songs(self, songs: List[Song]):
+        print(songs)
+        raise NotImplementedError
 
 
 class Station:
-    id: station_id
-    name: str
-    status: str
-    queue: StationQueue
+    def __init__(
+        self, id: station_id, name: str, playlist: Playlist | None = None
+    ) -> None:
+        self.id = id
+        self.name = name
+        self.status = "Stopped"
+        self.running = False
+        self.queue = StationQueue(playlist)
 
-    def start_streaming(self, playlist: Playlist):
-        self.queue = StationQueue.from_playlist(playlist)
-        self.running = True
-        return NotImplementedError
+    def start_streaming(self):
+        raise NotImplementedError
 
     def pause_streaming(self):
-        return NotImplementedError
+        raise NotImplementedError
 
     def unpause_streaming(self):
-        return NotImplementedError
+        raise NotImplementedError
 
     def get_status(self):
-        return NotImplementedError
+        raise NotImplementedError
 
 
 class User:
@@ -78,32 +86,32 @@ class User:
 
     def create_playlist(self, playlist: Playlist):
         print(playlist)
-        return NotImplementedError
+        raise NotImplementedError
 
     def update_playlist(self, playlist_id: playlist_id):
         print(playlist_id)
-        return NotImplementedError
+        raise NotImplementedError
 
     def delete_playlist(self, playlist_id: playlist_id):
         print(playlist_id)
-        return NotImplementedError
+        raise NotImplementedError
 
     def get_playlist(self, playlist_id: playlist_id):
         print(playlist_id)
-        return NotImplementedError
+        raise NotImplementedError
 
     def share_playlist(self, playlist_id: playlist_id):
         print(playlist_id)
-        return NotImplementedError
+        raise NotImplementedError
 
     def get_playlists(self):
-        return NotImplementedError
+        raise NotImplementedError
 
     def create_station(self):
-        return NotImplementedError
+        raise NotImplementedError
 
     def delete_station(self):
-        return NotImplementedError
+        raise NotImplementedError
 
     def get_station(self):
-        return NotImplementedError
+        raise NotImplementedError
