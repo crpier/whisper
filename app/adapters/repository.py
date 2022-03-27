@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from threading import Event, Thread
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 from sqlalchemy.orm import Session
 
@@ -23,7 +22,15 @@ class AbstractSongRepository(ABC):
 
 class AbstractUserRepository(ABC):
     @abstractmethod
-    def get(self) -> User:
+    def get_by_id(self) -> Optional[User]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_by_email(self, email: str) -> Optional[User]:
+        raise NotADirectoryError
+
+    @abstractmethod
+    def get_multi(self) -> User:
         raise NotImplementedError
 
     @abstractmethod
@@ -42,6 +49,14 @@ class SqlAlchemyUserRepository(AbstractUserRepository):
     def get(self, id: user_id):
         user = self.session.query(User).filter_by(id=id).first()
         return user
+
+    def get_by_email(self, email: str) -> Optional[User]:
+        user = self.session.query(User).filter_by(email=email).first()
+        return user
+
+    def get_multi(self):
+        users = self.session.query(User).all()
+        return users
 
     def add(self, user: User):
         self.session.add(user)

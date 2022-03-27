@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.core.config import settings
+from app.services import user_services
+from app.services.user_uow import SqlAlchemyUnitOfWork
 from app.utils import send_new_account_email
 
 router = APIRouter()
@@ -19,11 +21,13 @@ def read_users(
     skip: int = 0,
     limit: int = 100,
     current_user: models.User = Depends(deps.get_current_active_superuser),
+    user_uow: SqlAlchemyUnitOfWork = Depends(),
 ) -> Any:
     """
     Retrieve users.
     """
-    users = crud.user.get_multi(db, skip=skip, limit=limit)
+    users = user_services.get_users(user_uow)
+    # users = crud.user.get_multi(db, skip=skip, limit=limit)
     return users
 
 
@@ -33,17 +37,19 @@ def create_user(
     db: Session = Depends(deps.get_db),
     user_in: schemas.UserCreate,
     current_user: models.User = Depends(deps.get_current_active_superuser),
+    user_uow: SqlAlchemyUnitOfWork = Depends(),
 ) -> Any:
     """
     Create new user.
     """
-    user = crud.user.get_by_email(db, email=user_in.email)
-    if user:
-        raise HTTPException(
-            status_code=400,
-            detail="The user with this username already exists in the system.",
-        )
-    user = crud.user.create(db, obj_in=user_in)
+    # user = crud.user.get_by_email(db, email=user_in.email)
+    # if user:
+    #     raise HTTPException(
+    #         status_code=400,
+    #         detail="The user with this username already exists in the system.",
+    #     )
+    # user = crud.user.create(db, obj_in=user_in)
+    user = user_services.create_user(user_in, user_uow)
     if settings.EMAILS_ENABLED and user_in.email:
         send_new_account_email(
             email_to=user_in.email,
