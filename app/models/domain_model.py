@@ -1,6 +1,8 @@
-from typing import List, NewType, Optional
 from dataclasses import dataclass
 from queue import Queue
+from typing import List, NewType, Optional
+
+from app.core.security import get_password_hash
 
 user_id = NewType("user_id", str)
 station_id = NewType("station_id", str)
@@ -55,9 +57,14 @@ class StationQueue:
 
 class Station:
     def __init__(
-        self, id: station_id, name: str, playlist: Playlist | None = None
+        self,
+        id: station_id,
+        name: str,
+        owner_id: user_id,
+        playlist: Playlist | None = None,
     ) -> None:
         self.id = id
+        self.owner_id = owner_id
         self.name = name
         self.status = "Stopped"
         self.running = False
@@ -77,12 +84,16 @@ class Station:
 
 
 class User:
-    id: user_id
-    name: str
-    email: str
-    stations: List[Station]
-    own_playlists: List[Playlist]
-    saved_playlists: List[Playlist]
+    def __init__(
+        self, id: user_id, name: str, email: str, password: str
+    ) -> None:
+        self.id: user_id = id
+        self.name: str = name
+        self.email: str = email
+        self.password = password
+        self.stations: List[Station] = []
+        self.own_playlists: List[Playlist] = []
+        self.saved_playlists: List[Playlist] = []
 
     def create_playlist(self, playlist: Playlist):
         print(playlist)

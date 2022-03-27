@@ -1,9 +1,4 @@
-from sqlalchemy import (
-    Table,
-    Column,
-    Integer,
-    String,
-)
+from sqlalchemy import Column, Integer, String, Table
 from sqlalchemy.orm import registry
 
 from app.models.domain_model import User

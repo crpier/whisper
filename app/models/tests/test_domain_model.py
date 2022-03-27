@@ -1,5 +1,7 @@
-from pytest import fixture, mark
 from typing import Any
+
+from pytest import fixture, mark
+
 from app.models.domain_model import *
 
 
