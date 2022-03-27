@@ -98,6 +98,21 @@ def test_create_user_existing_username(
     assert r.status_code == 400
     assert "_id" not in created_user
 
+@pytest.mark.component
+def test_create_user_by_super_user(
+    client: TestClient, superuser_token_headers: Dict[str, str]
+) -> None:
+    username = random_email()
+    password = random_lower_string()
+    data = {"email": username, "password": password}
+    r = client.post(
+        f"{settings.API_V1_STR}/users/",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert r.status_code == 400
+
+
 
 @pytest.mark.component
 def test_create_user_by_normal_user(

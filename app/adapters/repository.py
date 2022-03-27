@@ -34,7 +34,7 @@ class AbstractUserRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def add(self, user: User) -> bool:
+    def add(self, user: User) -> User:
         raise NotImplementedError
 
     @abstractmethod

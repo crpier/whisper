@@ -90,7 +90,7 @@ class User:
         self.id: user_id = id
         self.name: str = name
         self.email: str = email
-        self.password = password
+        self.hashed_password = password
         self.stations: List[Station] = []
         self.own_playlists: List[Playlist] = []
         self.saved_playlists: List[Playlist] = []

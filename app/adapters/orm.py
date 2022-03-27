@@ -6,7 +6,7 @@ from app.models.domain_model import User
 mapper_registry = registry()
 
 user_table = Table(
-    "user",
+    "users",
     mapper_registry.metadata,
     Column("id", Integer, primary_key=True, index=True),
     Column("name", String(255)),

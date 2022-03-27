@@ -7,7 +7,7 @@ from typing import Optional
 
 def create_user(create_obj: user_schema.UserCreate, uow: user_uow.AbstractUnitOfWork):
     with uow:
-       db_obj = User(**create_obj.dict()) 
+       uow.users.add(create_obj)
        uow.commit()
     return user_schema.User(**db_obj.__dict__)
 

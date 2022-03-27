@@ -11,11 +11,13 @@ from app.api import deps
 from app.core import security
 from app.core.config import settings
 from app.core.security import get_password_hash
+from app.services.user_uow import SqlAlchemyUnitOfWork, get_sqlalchemy_uow
 from app.utils import (
     generate_password_reset_token,
     send_reset_password_email,
     verify_password_reset_token,
 )
+from app.services import user_services
 
 router = APIRouter()
 
@@ -25,15 +27,15 @@ logger = logging.getLogger(__name__)
 
 @router.post("/login/access-token", response_model=schemas.Token)
 def login_access_token(
-    db: Session = Depends(deps.get_db),
     form_data: OAuth2PasswordRequestForm = Depends(),
+    user_uow: SqlAlchemyUnitOfWork = Depends(get_sqlalchemy_uow),
 ) -> Any:
     """
     OAuth2 compatible token login, get an access token for future requests
     """
     logger.debug("form data: %s", form_data)
-    user = crud.user.authenticate(
-        db, email=form_data.username, password=form_data.password
+    user = user_services.authenticate(
+        email=form_data.username, password=form_data.password, uow=user_uow
     )
     if not user:
         raise HTTPException(
