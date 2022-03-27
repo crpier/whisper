@@ -50,6 +50,10 @@ class SqlAlchemyUserRepository(AbstractUserRepository):
         user = self.session.query(User).filter_by(id=id).first()
         return user
 
+    def get_by_id(self, id: user_id) -> Optional[User]:
+        user = self.session.query(User).filter_by(id=id).first()
+        return user
+
     def get_by_email(self, email: str) -> Optional[User]:
         user = self.session.query(User).filter_by(email=email).first()
         return user
@@ -90,6 +94,7 @@ class AbstractStationRepository(ABC):
     @abstractmethod
     def remove(self, station: Station):
         raise NotImplementedError
+
 
 class ThreadStationRepository(AbstractStationRepository):
     def __init__(self) -> None:

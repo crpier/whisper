@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from functools import lru_cache
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
@@ -51,3 +52,8 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
 
     def rollback(self):
         self.session.rollback()
+
+
+@lru_cache
+def get_sqlalchemy_uow():
+    return SqlAlchemyUnitOfWork()

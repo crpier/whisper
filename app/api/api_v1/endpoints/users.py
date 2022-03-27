@@ -9,7 +9,7 @@ from app import crud, models, schemas
 from app.api import deps
 from app.core.config import settings
 from app.services import user_services
-from app.services.user_uow import SqlAlchemyUnitOfWork
+from app.services.user_uow import SqlAlchemyUnitOfWork, get_sqlalchemy_uow
 from app.utils import send_new_account_email
 
 router = APIRouter()
@@ -21,7 +21,7 @@ def read_users(
     skip: int = 0,
     limit: int = 100,
     current_user: models.User = Depends(deps.get_current_active_superuser),
-    user_uow: SqlAlchemyUnitOfWork = Depends(),
+    user_uow: SqlAlchemyUnitOfWork = Depends(get_sqlalchemy_uow),
 ) -> Any:
     """
     Retrieve users.
@@ -37,7 +37,7 @@ def create_user(
     db: Session = Depends(deps.get_db),
     user_in: schemas.UserCreate,
     current_user: models.User = Depends(deps.get_current_active_superuser),
-    user_uow: SqlAlchemyUnitOfWork = Depends(),
+    user_uow: SqlAlchemyUnitOfWork = Depends(get_sqlalchemy_uow),
 ) -> Any:
     """
     Create new user.
