@@ -59,6 +59,9 @@ disable = ["E0611"]
 [tool.pytest.ini_options]
 log_cli = true
 log_cli_level = "INFO"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
 markers = [
   "unit: unit tests for commit stage",
   "component: component tests that depend on services extenral to the python app but still in our codebase and deployment",
