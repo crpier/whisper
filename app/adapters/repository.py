@@ -5,6 +5,11 @@ from sqlalchemy.orm import Session
 
 from app.models.domain_model import Song, Station, User, station_id, user_id
 
+from sqlalchemy import Column, Integer, String, Table
+from sqlalchemy.orm import registry
+
+from app.models.domain_model import User
+
 
 class AbstractSongRepository(ABC):
     @abstractmethod
@@ -20,9 +25,24 @@ class AbstractSongRepository(ABC):
         raise NotImplementedError
 
 
+mapper_registry = registry()
+
+user_table = Table(
+    "users",
+    mapper_registry.metadata,
+    Column("id", Integer, primary_key=True, index=True),
+    Column("name", String(255)),
+    Column("email", String(255), unique=True, index=True, nullable=False),
+    Column("hashed_password", String(255), nullable=False),
+    # TODO: stations, own_playlists, saved_playlists
+)
+
+mapper_registry.map_imperatively(User, user_table)
+
+
 class AbstractUserRepository(ABC):
     @abstractmethod
-    def get_by_id(self) -> Optional[User]:
+    def get_by_id(self, id: user_id) -> Optional[User]:
         raise NotImplementedError
 
     @abstractmethod
@@ -30,16 +50,20 @@ class AbstractUserRepository(ABC):
         raise NotADirectoryError
 
     @abstractmethod
-    def get_multi(self) -> User:
+    def get_multi(self) -> List[User]:
         raise NotImplementedError
 
     @abstractmethod
-    def add(self, user: User) -> User:
+    def add(self, user: User) -> user_id:
         raise NotImplementedError
 
     @abstractmethod
-    def update(self, title, album, artist, song: Song):
+    def update(self, id: user_id, **kwargs):
         raise NotImplementedError
+
+    @abstractmethod
+    def delete(self, id: user_id):
+        raise NotADirectoryError
 
 
 class SqlAlchemyUserRepository(AbstractUserRepository):
@@ -62,8 +86,10 @@ class SqlAlchemyUserRepository(AbstractUserRepository):
         users = self.session.query(User).all()
         return users
 
-    def add(self, user: User):
+    def add(self, user: User) -> user_id:
         self.session.add(user)
+        self.session.flush()
+        return user.id
 
     def update(self, id: user_id, user: User):
         updated_rows = self.session.query(User).filter_by(id=id).update(user)
@@ -72,6 +98,38 @@ class SqlAlchemyUserRepository(AbstractUserRepository):
     def delete(self, id: user_id):
         deleted_rows = self.session.query(User).filter_by(id=id).delete()
         return deleted_rows
+
+
+class FakeUserRepository(AbstractUserRepository):
+    def __init__(self) -> None:
+        # XXX Would a dictionary be easier to user?
+        self.container: List[User] = []
+
+    def get_by_id(self, id: user_id) -> Optional[User]:
+        res = [user for user in self.container if user.id == id]
+        return res[0]
+
+    def get_by_email(self, email: str) -> Optional[User]:
+        res = [user for user in self.container if user.email == email]
+        return res[0]
+
+    def get_multi(self) -> List[User]:
+        return self.container
+
+    def add(self, user: User) -> bool:
+        self.container.append(user)
+        return True
+
+    def update(self, id: user_id, **kwargs):
+        user_to_change = self.get_by_id(id)
+        for key, value in kwargs.values():
+            setattr(user_to_change, key, value)
+
+    def delete(self, id: user_id):
+        user_to_del = self.get_by_id(id)
+        if user_to_del:
+            id_to_del = self.container.index(user_to_del)
+            del self.container[id_to_del]
 
 
 class AbstractStationRepository(ABC):
