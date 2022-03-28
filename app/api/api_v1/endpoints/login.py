@@ -1,15 +1,13 @@
 import logging
-from datetime import timedelta
-from typing import Any
+from typing import Any, Dict
 
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, schemas
 from app.api import deps
 from app.core import security
-from app.core.config import settings
 from app.core.security import get_password_hash
 from app.services.user_uow import SqlAlchemyUnitOfWork, get_sqlalchemy_uow
 from app.utils import (
@@ -49,7 +47,7 @@ def login_access_token(
 
 @router.post("/login/test-token", response_model=schemas.User)
 def test_token(
-    current_user: models.User = Depends(deps.get_current_user),
+    current_user: schemas.User = Depends(user_services.get_current_user),
 ) -> Any:
     """
     Test access token
