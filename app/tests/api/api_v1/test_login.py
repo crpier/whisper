@@ -9,7 +9,7 @@ from app.core.config import settings
 @pytest.mark.component
 def test_get_access_token(client: TestClient) -> None:
     login_data = {
-        "username": settings.FIRST_SUPERUSER,
+        "username": settings.FIRST_SUPERUSER_EMAIL,
         "password": settings.FIRST_SUPERUSER_PASSWORD,
     }
     r = client.post(

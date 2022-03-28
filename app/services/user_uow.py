@@ -7,6 +7,7 @@ from sqlalchemy.orm.session import Session
 
 from app.adapters.repository import (
     AbstractUserRepository,
+    FakeUserRepository,
     SqlAlchemyUserRepository,
 )
 from app.core.config import settings
@@ -22,7 +23,7 @@ class AbstractUnitOfWork(ABC):
     def __enter__(self):
         return self
 
-    def __exit__(self):
+    def __exit__(self, *_):
         self.rollback()
 
     @abstractmethod
@@ -43,7 +44,7 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
         self.users = SqlAlchemyUserRepository(self.session)
         return super().__enter__()
 
-    def __exit__(self, *args):
+    def __exit__(self, *_):
         super().__exit__()
         self.session.close()
 
@@ -52,6 +53,19 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
 
     def rollback(self):
         self.session.rollback()
+
+
+class FakeUnitOfWork(AbstractUnitOfWork):
+    def __init__(self):
+        self.users = FakeUserRepository()
+        self.commited = False
+        self.rolled_back = False
+
+    def commit(self):
+        self.commited = True
+
+    def rollback(self):
+        self.rolled_back = True
 
 
 @lru_cache

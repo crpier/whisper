@@ -48,14 +48,13 @@ def create_user(
     #         detail="The user with this username already exists in the system.",
     #     )
     # user = crud.user.create(db, obj_in=user_in)
-    user = user_services.create_user(user_in, user_uow)
+    user_services.create_user(user_in, user_uow)
     if settings.EMAILS_ENABLED and user_in.email:
         send_new_account_email(
             email_to=user_in.email,
             username=user_in.email,
             password=user_in.password,
         )
-    return user
 
 
 @router.put("/me", response_model=schemas.User)
