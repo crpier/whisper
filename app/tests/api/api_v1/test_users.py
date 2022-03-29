@@ -7,7 +7,9 @@ from sqlalchemy.orm import Session
 from app import crud
 from app.core.config import settings
 from app.schemas.user import UserCreate
+from app.services.user_uow import SqlAlchemyUnitOfWork, get_sqlalchemy_uow
 from app.tests.utils.utils import random_email, random_lower_string
+from app.services import user_services
 
 
 @pytest.mark.component
@@ -37,11 +39,12 @@ def test_get_users_normal_user_me(
 # TODO this fails only when running the whole suite
 @pytest.mark.component
 def test_create_user_new_email(
-    client: TestClient, superuser_token_headers: dict, db: Session
+        client: TestClient, superuser_token_headers: dict, uow: SqlAlchemyUnitOfWork = get_sqlalchemy_uow()
 ) -> None:
-    username = random_email()
+    email = random_email()
+    name = random_lower_string()
     password = random_lower_string()
-    data = {"email": username, "password": password}
+    data = {"email": email, "password": password, "name": name}
     r = client.post(
         f"{settings.API_V1_STR}/users/",
         headers=superuser_token_headers,
@@ -49,9 +52,11 @@ def test_create_user_new_email(
     )
     assert 200 <= r.status_code < 300
     created_user = r.json()
-    user = crud.user.get_by_email(db, email=username)
+    user = user_services.get_user_by_email(email, uow)
     assert user
     assert user.email == created_user["email"]
+    assert user.id == created_user["id"]
+    assert user.id is not None
 
 
 @pytest.mark.component

@@ -3,13 +3,13 @@ from typing import Any, List
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic.networks import EmailStr
-from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.core.config import settings
 from app.services import user_services
 from app.services.user_uow import SqlAlchemyUnitOfWork, get_sqlalchemy_uow
 from app.utils import send_new_account_email
+from app.models.domain_model import User
 
 router = APIRouter()
 
@@ -30,9 +30,9 @@ def read_users(
 def create_user(
     *,
     user_in: schemas.UserCreate,
-    current_user: models.User = Depends(user_services.get_current_user),
+    _: models.User = Depends(user_services.get_current_user),
     user_uow: SqlAlchemyUnitOfWork = Depends(get_sqlalchemy_uow),
-) -> Any:
+) -> User:
     """
     Create new user.
     """
@@ -43,13 +43,14 @@ def create_user(
     #         detail="The user with this username already exists in the system.",
     #     )
     # user = crud.user.create(db, obj_in=user_in)
-    user_services.create_user(user_in, user_uow)
+    user = user_services.create_user(user_in, user_uow)
     if settings.EMAILS_ENABLED and user_in.email:
         send_new_account_email(
             email_to=user_in.email,
             username=user_in.email,
             password=user_in.password,
         )
+    return user
 
 
 @router.put("/me", response_model=schemas.User)
