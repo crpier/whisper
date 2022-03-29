@@ -33,18 +33,17 @@ def create_user(
         name=create_obj.name, email=create_obj.email, hashed_password=hashed_password
     )
     with uow:
-        user_id = uow.users.add(new_user)
-        db_user = uow.users.get_by_id(user_id)
-        user = User(**db_user.__dict__)
+        new_id = uow.users.add(new_user)
         uow.commit()
-    return user
+        created_user = uow.users.get_by_id(new_id)
+        assert created_user
+    return created_user
 
 def get_user_by_email(email: EmailStr, uow: user_uow.AbstractUnitOfWork) -> Optional[User]:
     with uow:
-        db_user = uow.users.get_one_by(email=email)
-        if not db_user:
+        user = uow.users.get_one_by(email=email)
+        if not user:
             return
-        user = User(**db_user.__dict__)
         return user
         
 

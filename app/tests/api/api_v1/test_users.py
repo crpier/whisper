@@ -36,7 +36,6 @@ def test_get_users_normal_user_me(
     assert current_user["email"] == settings.TEST_USER_EMAIL
 
 
-# TODO this fails only when running the whole suite
 @pytest.mark.component
 def test_create_user_new_email(
         client: TestClient, superuser_token_headers: dict, uow: SqlAlchemyUnitOfWork = get_sqlalchemy_uow()
@@ -58,6 +57,11 @@ def test_create_user_new_email(
     assert user.id == created_user["id"]
     assert user.id is not None
 
+    __import__('pdb').set_trace()
+    # Ensure we don't expose passwords
+    assert created_user.get("hashed_password") is None
+    assert created_user.get("password") is None
+
 
 @pytest.mark.component
 def test_get_existing_user(
@@ -74,7 +78,7 @@ def test_get_existing_user(
     )
     assert 200 <= r.status_code < 300
     api_user = r.json()
-    existing_user = crud.user.get_by_email(db, email=username)
+    existing_user = crud.user.get_by_email(db, email=email)
     assert existing_user
     assert existing_user.email == api_user["email"]
 

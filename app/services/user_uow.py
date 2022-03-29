@@ -45,8 +45,9 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
         return super().__enter__()
 
     def __exit__(self, *_):
-        super().__exit__()
+        self.session.expunge_all()
         self.session.close()
+        super().__exit__()
 
     def commit(self):
         self.session.commit()

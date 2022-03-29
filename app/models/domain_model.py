@@ -84,14 +84,15 @@ class Station:
 
 
 class User:
-    def __init__(self, name: str, email: EmailStr, hashed_password: str, **_) -> None:
+    def __init__(self, name: str, email: EmailStr, hashed_password: str, id: user_id | None = None, **_) -> None:
         self.name: str = name
         self.email: str = email
         self.hashed_password = hashed_password
         self.stations: List[Station] = []
         self.own_playlists: List[Playlist] = []
         self.saved_playlists: List[Playlist] = []
-        self.id: user_id
+        if id:
+            self.id: user_id
 
     def create_playlist(self, playlist: Playlist):
         print(playlist)
