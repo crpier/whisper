@@ -55,6 +55,7 @@ def test_token(
     return current_user
 
 
+# TODO: e2e test
 @router.post("/password-recovery/{email}", response_model=schemas.Msg)
 def recover_password(email: str, db: Session = Depends(deps.get_db)) -> Any:
     """
@@ -74,6 +75,7 @@ def recover_password(email: str, db: Session = Depends(deps.get_db)) -> Any:
     return {"msg": "Password recovery email sent"}
 
 
+# TODO: e2e test
 @router.post("/reset-password/", response_model=schemas.Msg)
 def reset_password(
     token: str = Body(...),

@@ -42,6 +42,10 @@ mapper_registry.map_imperatively(User, user_table)
 
 class AbstractUserRepository(ABC):
     @abstractmethod
+    def get_one_by(self, **kwargs) -> Optional[User]:
+        raise NotImplementedError
+
+    @abstractmethod
     def get_by_id(self, id: user_id) -> Optional[User]:
         raise NotImplementedError
 
@@ -69,6 +73,10 @@ class AbstractUserRepository(ABC):
 class SqlAlchemyUserRepository(AbstractUserRepository):
     def __init__(self, session: Session) -> None:
         self.session = session
+
+    def get_one_by(self, **kwargs) -> Optional[User]:
+        user = self.session.query(User).filter_by(**kwargs).first()
+        return user
 
     def get(self, id: user_id):
         user = self.session.query(User).filter_by(id=id).first()
@@ -104,6 +112,11 @@ class FakeUserRepository(AbstractUserRepository):
     def __init__(self) -> None:
         # XXX Would a dictionary be easier to user?
         self.container: List[User] = []
+
+    def get_one_by(self, **kwargs) -> Optional[User]:
+        candidates = self.container.copy()
+        for key, value in kwargs.items():
+            candidates = [user for user in candidates if user.__dict__[key] == value]
 
     def get_by_id(self, id: user_id) -> Optional[User]:
         res = [user for user in self.container if user.id == id]

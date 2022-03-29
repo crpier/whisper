@@ -1,9 +1,10 @@
+from pydantic.networks import EmailStr
 from app.models.domain_model import User, user_id
 from app import schemas
 from app.schemas import user as user_schema
 from app.services import user_uow
 from app.core.security import get_password_hash, verify_password
-from typing import Optional, Dict, Any
+from typing import Optional
 from fastapi.security import OAuth2PasswordBearer
 from app.core.config import settings
 from fastapi import Depends
@@ -26,16 +27,26 @@ reusable_oauth2 = OAuth2PasswordBearer(
 
 def create_user(
     create_obj: user_schema.UserCreate, uow: user_uow.AbstractUnitOfWork
-) -> user_id:
+) -> User:
     hashed_password = get_password_hash(create_obj.password)
     new_user = User(
-        name=create_obj.name, email=create_obj.email, password=hashed_password
+        name=create_obj.name, email=create_obj.email, hashed_password=hashed_password
     )
     with uow:
         user_id = uow.users.add(new_user)
+        db_user = uow.users.get_by_id(user_id)
+        user = User(**db_user.__dict__)
         uow.commit()
-        return user_id
+    return user
 
+def get_user_by_email(email: EmailStr, uow: user_uow.AbstractUnitOfWork) -> Optional[User]:
+    with uow:
+        db_user = uow.users.get_one_by(email=email)
+        if not db_user:
+            return
+        user = User(**db_user.__dict__)
+        return user
+        
 
 def get_users(uow: user_uow.AbstractUnitOfWork):
     with uow:

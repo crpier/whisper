@@ -19,8 +19,6 @@ def test_get_users_superuser_me(
     )
     current_user = r.json()
     assert current_user
-    assert current_user["is_active"] is True
-    assert current_user["is_superuser"]
     assert current_user["email"] == settings.FIRST_SUPERUSER_EMAIL
 
 
@@ -33,14 +31,11 @@ def test_get_users_normal_user_me(
     )
     current_user = r.json()
     assert current_user
-    assert current_user["is_active"] is True
-    assert current_user["is_superuser"] is False
-    assert current_user["email"] == settings.EMAIL_TEST_USER
+    assert current_user["email"] == settings.TEST_USER_EMAIL
 
 
 # TODO this fails only when running the whole suite
 @pytest.mark.component
-@pytest.mark.xfail
 def test_create_user_new_email(
     client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
@@ -63,9 +58,9 @@ def test_create_user_new_email(
 def test_get_existing_user(
     client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
-    username = random_email()
+    email = random_email()
     password = random_lower_string()
-    user_in = UserCreate(email=username, password=password)
+    user_in = UserCreate(email=email, password=password)
     user = crud.user.create(db, obj_in=user_in)
     user_id = user.id
     r = client.get(

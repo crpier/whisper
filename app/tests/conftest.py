@@ -2,7 +2,6 @@ from typing import Dict, Generator
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.session import SessionLocal
@@ -29,8 +28,8 @@ def superuser_token_headers(client: TestClient) -> Dict[str, str]:
 
 @pytest.fixture(scope="module")
 def normal_user_token_headers(
-    client: TestClient, db: Session
+    client: TestClient
 ) -> Dict[str, str]:
     return authentication_token_from_email(
-        client=client, email=settings.EMAIL_TEST_USER, db=db
+        client=client, email=settings.TEST_USER_EMAIL
     )

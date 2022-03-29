@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from queue import Queue
 from typing import List, NewType, Optional
 
+from pydantic.networks import EmailStr
+
 user_id = NewType("user_id", str)
 station_id = NewType("station_id", str)
 playlist_id = NewType("playlist_id", str)
@@ -82,10 +84,10 @@ class Station:
 
 
 class User:
-    def __init__(self, name: str, email: str, password: str) -> None:
+    def __init__(self, name: str, email: EmailStr, hashed_password: str, **_) -> None:
         self.name: str = name
         self.email: str = email
-        self.hashed_password = password
+        self.hashed_password = hashed_password
         self.stations: List[Station] = []
         self.own_playlists: List[Playlist] = []
         self.saved_playlists: List[Playlist] = []
