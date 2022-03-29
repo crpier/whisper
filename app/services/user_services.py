@@ -35,6 +35,7 @@ def create_user(
     with uow:
         new_id = uow.users.add(new_user)
         uow.commit()
+        # TODO: check if this can be better achieved by adding the object and calling session.refresh()
         created_user = uow.users.get_by_id(new_id)
         assert created_user
     return created_user
@@ -46,6 +47,14 @@ def get_user_by_email(email: EmailStr, uow: user_uow.AbstractUnitOfWork) -> Opti
             return
         return user
         
+
+def get_user_by_id(id: user_id, uow: user_uow.AbstractUnitOfWork) -> Optional[User]:
+    with uow:
+        user = uow.users.get_one_by(id=id)
+        if not user:
+            return
+        return user
+
 
 def get_users(uow: user_uow.AbstractUnitOfWork):
     with uow:

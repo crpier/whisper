@@ -65,12 +65,13 @@ def test_create_user_new_email(
 
 @pytest.mark.component
 def test_get_existing_user(
-    client: TestClient, superuser_token_headers: dict, db: Session
+    client: TestClient, superuser_token_headers: dict, uow: SqlAlchemyUnitOfWork = get_sqlalchemy_uow()
 ) -> None:
     email = random_email()
+    name = random_lower_string()
     password = random_lower_string()
-    user_in = UserCreate(email=email, password=password)
-    user = crud.user.create(db, obj_in=user_in)
+    user_in = UserCreate(email=email, name=name, password=password)
+    user = user_services.create_user(user_in, uow)
     user_id = user.id
     r = client.get(
         f"{settings.API_V1_STR}/users/{user_id}",
@@ -78,7 +79,7 @@ def test_get_existing_user(
     )
     assert 200 <= r.status_code < 300
     api_user = r.json()
-    existing_user = crud.user.get_by_email(db, email=email)
+    existing_user = user_services.get_user_by_email(email, uow)
     assert existing_user
     assert existing_user.email == api_user["email"]
 

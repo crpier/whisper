@@ -9,7 +9,7 @@ from app.core.config import settings
 from app.services import user_services
 from app.services.user_uow import SqlAlchemyUnitOfWork, get_sqlalchemy_uow
 from app.utils import send_new_account_email
-from app.models.domain_model import User
+from app.models.domain_model import User, user_id
 
 router = APIRouter()
 
@@ -116,19 +116,19 @@ def create_user_open(
 
 @router.get("/{user_id}", response_model=schemas.User)
 def read_user_by_id(
-    user_id: int,
+    user_id: user_id,
+    user_uow: SqlAlchemyUnitOfWork = Depends(get_sqlalchemy_uow),
     current_user: models.User = Depends(user_services.get_current_user),
 ) -> Any:
     """
     Get a specific user by id.
     """
-    user = crud.user.get(db, id=user_id)
-    if user == current_user:
-        return user
-    if not crud.user.is_superuser(current_user):
+    if user_id == current_user.id:
         raise HTTPException(
             status_code=400, detail="The user doesn't have enough privileges"
         )
+
+    user = user_services.get_user_by_id(user_id, user_uow)
     return user
 
 
