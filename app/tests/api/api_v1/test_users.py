@@ -2,9 +2,7 @@ from typing import Dict
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
 
-from app import crud
 from app.core.config import settings
 from app.schemas.user import UserCreate
 from app.services.user_uow import SqlAlchemyUnitOfWork, get_sqlalchemy_uow
@@ -149,7 +147,7 @@ def test_retrieve_users(
     email2 = random_email()
     username2 = random_lower_string()
     password2 = random_lower_string()
-    user_in2 = UserCreate(email=email2, name=username2, password=password2)
+    UserCreate(email=email2, name=username2, password=password2)
 
     r = client.get(
         f"{settings.API_V1_STR}/users/", headers=superuser_token_headers

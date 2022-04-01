@@ -4,7 +4,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic.networks import EmailStr
 
-from app import crud, models, schemas
+from app import models, schemas
 from app.core.config import settings
 from app.services import user_services
 from app.services.user_uow import SqlAlchemyUnitOfWork, get_sqlalchemy_uow
