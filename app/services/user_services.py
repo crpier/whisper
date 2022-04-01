@@ -1,4 +1,6 @@
 from pydantic.networks import EmailStr
+import sqlalchemy
+from sqlalchemy.exc import IntegrityError
 from app.models.domain_model import User, user_id
 from app import schemas
 from app.schemas import user as user_schema
@@ -24,7 +26,6 @@ reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
 )
 
-
 def create_user(
     create_obj: user_schema.UserCreate, uow: user_uow.AbstractUnitOfWork
 ) -> User:
@@ -32,12 +33,15 @@ def create_user(
     new_user = User(
         name=create_obj.name, email=create_obj.email, hashed_password=hashed_password
     )
-    with uow:
-        new_id = uow.users.add(new_user)
-        uow.commit()
-        # TODO: check if this can be better achieved by adding the object and calling session.refresh()
-        created_user = uow.users.get_by_id(new_id)
-        assert created_user
+    try:
+        with uow:
+            new_id = uow.users.add(new_user)
+            uow.commit()
+            # TODO: check if this can be better achieved by adding the object and calling session.refresh()
+            created_user = uow.users.get_by_id(new_id)
+            assert created_user
+    except IntegrityError:
+        raise DuplicateException
     return created_user
 
 def get_user_by_email(email: EmailStr, uow: user_uow.AbstractUnitOfWork) -> Optional[User]:
@@ -58,7 +62,7 @@ def get_user_by_id(id: user_id, uow: user_uow.AbstractUnitOfWork) -> Optional[Us
 
 def get_users(uow: user_uow.AbstractUnitOfWork):
     with uow:
-        uow.users.get_multi()
+        return uow.users.get_multi()
 
 
 def authenticate(
@@ -94,4 +98,7 @@ class InvalidCredentials(BaseException):
     pass
 
 class UserNotFound(BaseException):
+    pass
+
+class DuplicateException(BaseException):
     pass

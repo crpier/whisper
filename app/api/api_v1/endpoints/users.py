@@ -22,7 +22,6 @@ def read_users(
     Retrieve users.
     """
     users = user_services.get_users(user_uow)
-    # users = crud.user.get_multi(db, skip=skip, limit=limit)
     return users
 
 
@@ -36,14 +35,14 @@ def create_user(
     """
     Create new user.
     """
-    # user = crud.user.get_by_email(db, email=user_in.email)
-    # if user:
-    #     raise HTTPException(
-    #         status_code=400,
-    #         detail="The user with this username already exists in the system.",
-    #     )
-    # user = crud.user.create(db, obj_in=user_in)
-    user = user_services.create_user(user_in, user_uow)
+    try:
+        user = user_services.create_user(user_in, user_uow)
+    except user_services.DuplicateException:
+        raise HTTPException(
+            status_code=400,
+            detail="The user with this username already exists in the system.",
+        )
+
     if settings.EMAILS_ENABLED and user_in.email:
         send_new_account_email(
             email_to=user_in.email,
