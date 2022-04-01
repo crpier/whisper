@@ -62,7 +62,8 @@ def get_user_by_id(id: user_id, uow: user_uow.AbstractUnitOfWork) -> Optional[Us
 
 def get_users(uow: user_uow.AbstractUnitOfWork):
     with uow:
-        return uow.users.get_multi()
+        users =  uow.users.get_multi()
+        return users
 
 
 def authenticate(
@@ -70,6 +71,7 @@ def authenticate(
 ) -> Optional[user_id]:
     with uow:
         user = uow.users.get_by_email(email=email)
+        uow.commit()
         if not user:
             return None
         if not verify_password(password, user.hashed_password):
@@ -92,7 +94,9 @@ def get_current_user(
         user = uow.users.get_by_id(id)
         if not user:
             raise UserNotFound
-        return schemas.User(**user.__dict__)
+        return_user = schemas.User(**user.__dict__)
+        uow.commit()
+    return return_user
 
 class InvalidCredentials(BaseException):
     pass

@@ -11,9 +11,9 @@ from app.services import user_services
 
 
 def user_authentication_headers(
-    *, client: TestClient, email: EmailStr, password: str
+    *, client: TestClient, username: str, password: str
 ) -> Dict[str, str]:
-    data = {"username": email, "password": password}
+    data = {"username": username, "password": password}
 
     r = client.post(f"{settings.API_V1_STR}/login/access-token", data=data)
     response = r.json()
@@ -31,12 +31,16 @@ def authentication_token_from_email(
     If the user doesn't exist it is created first.
     """
     password = random_lower_string()
+    name = random_lower_string()
     with uow:
         user = user_services.get_user_by_email(email, uow)
-        if not user:
-            user_in = UserCreate(name=email, email=email, password=password)
-            user = user_services.create_user(user_in, uow)
+        if user:
+            uow.users.delete_by_email(email)
+            uow.commit()
+        user_in = UserCreate(name=name, email=email, password=password)
+        user = user_services.create_user(user_in, uow)
 
-        return user_authentication_headers(
-            client=client, email=email, password=password
-        )
+        uow.commit()
+    return user_authentication_headers(
+        client=client, username=email, password=password
+    )

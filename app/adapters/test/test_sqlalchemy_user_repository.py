@@ -33,14 +33,14 @@ def normal_user(
         password="fakepass",
     )
     user_id = create_user(user_to_create, uow=uow)
-    user = repository.get_by_id(user_id)
+    user = repository.get_by_id(user_id.id)
     assert user
 
     yield user
 
     # TODO: create and use service function
     with uow:
-        uow.users.delete(user_id)
+        uow.users.delete(user_id.id)
         uow.commit()
 
 

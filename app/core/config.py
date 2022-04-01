@@ -99,6 +99,7 @@ class Settings(BaseSettings):
         )
 
     TEST_USER_EMAIL: EmailStr = "test@example.com"  # type: ignore
+    TEST_USER_USERNAME: str = "test"  # type: ignore
     FIRST_SUPERUSER_EMAIL: EmailStr
     FIRST_SUPERUSER_NAME: str
     FIRST_SUPERUSER_PASSWORD: str

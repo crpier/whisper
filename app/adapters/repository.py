@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List, Tuple, Optional
+from pydantic.networks import EmailStr
 
 from sqlalchemy.orm import Session
 
@@ -67,7 +68,12 @@ class AbstractUserRepository(ABC):
 
     @abstractmethod
     def delete(self, id: user_id):
-        raise NotADirectoryError
+        raise NotImplementedError
+
+    @abstractmethod
+    def delete_by_email(self, email: EmailStr):
+        raise NotImplementedError
+
 
 
 class SqlAlchemyUserRepository(AbstractUserRepository):
@@ -107,6 +113,11 @@ class SqlAlchemyUserRepository(AbstractUserRepository):
         deleted_rows = self.session.query(User).filter_by(id=id).delete()
         return deleted_rows
 
+    def delete_by_email(self, email: EmailStr):
+        deleted_rows = self.session.query(User).filter_by(email=email).delete()
+        return deleted_rows
+
+
 
 class FakeUserRepository(AbstractUserRepository):
     def __init__(self) -> None:
@@ -143,6 +154,15 @@ class FakeUserRepository(AbstractUserRepository):
         if user_to_del:
             id_to_del = self.container.index(user_to_del)
             del self.container[id_to_del]
+
+    @abstractmethod
+    def delete_by_email(self, email: EmailStr):
+        user_to_del = self.get_by_email(email)
+        if user_to_del:
+            id_to_del = self.container.index(user_to_del)
+            del self.container[id_to_del]
+
+
 
 
 class AbstractStationRepository(ABC):
