@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
-from app.adapters.repository import (
+from app.adapters.user.repository import (
     AbstractUserRepository,
     FakeUserRepository,
     SqlAlchemyUserRepository,
