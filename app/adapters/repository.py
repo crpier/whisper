@@ -140,9 +140,9 @@ class FakeUserRepository(AbstractUserRepository):
     def get_multi(self) -> List[User]:
         return self.container
 
-    def add(self, user: User) -> bool:
+    def add(self, user: User) -> user_id:
         self.container.append(user)
-        return True
+        return user.id
 
     def update(self, id: user_id, **kwargs):
         user_to_change = self.get_by_id(id)
@@ -155,7 +155,6 @@ class FakeUserRepository(AbstractUserRepository):
             id_to_del = self.container.index(user_to_del)
             del self.container[id_to_del]
 
-    @abstractmethod
     def delete_by_email(self, email: EmailStr):
         user_to_del = self.get_by_email(email)
         if user_to_del:

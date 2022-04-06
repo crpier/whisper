@@ -24,6 +24,5 @@ class TestCreateUser:
     def test_password_is_not_added_as_is(
         self, fake_uow: FakeUnitOfWork, normal_user: UserCreate
     ):
-        create_user(normal_user, fake_uow)
-        new_user = fake_uow.users.get_multi()[0]
+        new_user = create_user(normal_user, fake_uow)
         assert normal_user.password != new_user.hashed_password
