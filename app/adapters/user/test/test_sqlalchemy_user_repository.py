@@ -2,7 +2,7 @@ from typing import Generator
 from pydantic.networks import EmailStr
 from pytest import fixture
 
-from app.adapters.repository import SqlAlchemyUserRepository
+from app.adapters.user.repository import SqlAlchemyUserRepository
 from app.models.domain_model import User
 from app.schemas.user import UserCreate
 from app.services.user_uow import (
