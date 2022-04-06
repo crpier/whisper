@@ -98,8 +98,10 @@ class Settings(BaseSettings):
             and values.get("EMAILS_FROM_EMAIL")
         )
 
-    EMAIL_TEST_USER: EmailStr = "test@example.com"  # type: ignore
-    FIRST_SUPERUSER: EmailStr
+    TEST_USER_EMAIL: EmailStr = "test@example.com"  # type: ignore
+    TEST_USER_USERNAME: str = "test"  # type: ignore
+    FIRST_SUPERUSER_EMAIL: EmailStr
+    FIRST_SUPERUSER_NAME: str
     FIRST_SUPERUSER_PASSWORD: str
     USERS_OPEN_REGISTRATION: bool = False
 

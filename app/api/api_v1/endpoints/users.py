@@ -3,47 +3,46 @@ from typing import Any, List
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic.networks import EmailStr
-from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
-from app.api import deps
+from app import models, schemas
 from app.core.config import settings
+from app.services import user_services
+from app.services.user_uow import SqlAlchemyUnitOfWork, get_sqlalchemy_uow
 from app.utils import send_new_account_email
+from app.models.domain_model import User, user_id
 
 router = APIRouter()
 
 
 @router.get("/", response_model=List[schemas.User])
 def read_users(
-    db: Session = Depends(deps.get_db),
-    skip: int = 0,
-    limit: int = 100,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    user_uow: SqlAlchemyUnitOfWork = Depends(get_sqlalchemy_uow),
 ) -> Any:
     """
     Retrieve users.
     """
-    users = crud.user.get_multi(db, skip=skip, limit=limit)
+    users = user_services.get_users(user_uow)
     return users
 
 
 @router.post("/", response_model=schemas.User)
 def create_user(
     *,
-    db: Session = Depends(deps.get_db),
     user_in: schemas.UserCreate,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
-) -> Any:
+    _: models.User = Depends(user_services.get_current_user),
+    user_uow: SqlAlchemyUnitOfWork = Depends(get_sqlalchemy_uow),
+) -> User:
     """
     Create new user.
     """
-    user = crud.user.get_by_email(db, email=user_in.email)
-    if user:
+    try:
+        user = user_services.create_user(user_in, user_uow)
+    except user_services.DuplicateException:
         raise HTTPException(
             status_code=400,
             detail="The user with this username already exists in the system.",
         )
-    user = crud.user.create(db, obj_in=user_in)
+
     if settings.EMAILS_ENABLED and user_in.email:
         send_new_account_email(
             email_to=user_in.email,
@@ -56,11 +55,10 @@ def create_user(
 @router.put("/me", response_model=schemas.User)
 def update_user_me(
     *,
-    db: Session = Depends(deps.get_db),
     password: str = Body(None),
     full_name: str = Body(None),
     email: EmailStr = Body(None),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: models.User = Depends(user_services.get_current_user),
 ) -> Any:
     """
     Update own user.
@@ -79,8 +77,7 @@ def update_user_me(
 
 @router.get("/me", response_model=schemas.User)
 def read_user_me(
-    db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: models.User = Depends(user_services.get_current_user),
 ) -> Any:
     """
     Get current user.
@@ -91,7 +88,6 @@ def read_user_me(
 @router.post("/open", response_model=schemas.User)
 def create_user_open(
     *,
-    db: Session = Depends(deps.get_db),
     password: str = Body(...),
     email: EmailStr = Body(...),
     full_name: str = Body(None),
@@ -119,30 +115,28 @@ def create_user_open(
 
 @router.get("/{user_id}", response_model=schemas.User)
 def read_user_by_id(
-    user_id: int,
-    current_user: models.User = Depends(deps.get_current_active_user),
-    db: Session = Depends(deps.get_db),
+    user_id: user_id,
+    user_uow: SqlAlchemyUnitOfWork = Depends(get_sqlalchemy_uow),
+    current_user: models.User = Depends(user_services.get_current_user),
 ) -> Any:
     """
     Get a specific user by id.
     """
-    user = crud.user.get(db, id=user_id)
-    if user == current_user:
-        return user
-    if not crud.user.is_superuser(current_user):
+    if user_id == current_user.id:
         raise HTTPException(
             status_code=400, detail="The user doesn't have enough privileges"
         )
+
+    user = user_services.get_user_by_id(user_id, user_uow)
     return user
 
 
 @router.put("/{user_id}", response_model=schemas.User)
 def update_user(
     *,
-    db: Session = Depends(deps.get_db),
     user_id: int,
     user_in: schemas.UserUpdate,
-    current_user: models.User = Depends(deps.get_current_active_superuser),
+    current_user: models.User = Depends(user_services.get_current_user),
 ) -> Any:
     """
     Update a user.
