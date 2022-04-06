@@ -1,29 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List, Tuple, Optional
-from pydantic.networks import EmailStr
+from typing import Dict, List, Tuple
 
-from sqlalchemy.orm import Session
-
-from app.models.domain_model import Song, Station, User, station_id, user_id
-
-from sqlalchemy import Column, Integer, String, Table
-from sqlalchemy.orm import registry
-
-from app.models.domain_model import User
-
-
-class AbstractSongRepository(ABC):
-    @abstractmethod
-    def get(self, title, album, artist) -> Song:
-        raise NotImplementedError
-
-    @abstractmethod
-    def download(self, song: Song) -> bytes:
-        raise NotImplementedError
-
-    @abstractmethod
-    def add(self, song: Song) -> bool:
-        raise NotImplementedError
+from app.models.domain_model import Station, station_id, user_id
 
 class AbstractStationRepository(ABC):
     @abstractmethod
@@ -77,3 +55,4 @@ class ThreadStationRepository(AbstractStationRepository):
 
 class StationAlreadyExists(BaseException):
     pass
+
