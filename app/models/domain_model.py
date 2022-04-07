@@ -70,7 +70,7 @@ class Station:
         genre: str,
         broadcastServer: BroadcastServer,
         bitrate: int,
-        playlist: Playlist | None = None,
+        playlist: Optional[Playlist] = None,
     ) -> None:
         self.id = id
         self.owner_id = owner_id
