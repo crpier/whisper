@@ -3,6 +3,7 @@ from queue import Queue
 from typing import List, NewType, Optional
 
 from pydantic.networks import EmailStr
+from sqlalchemy.sql.sqltypes import Enum
 
 user_id = NewType("user_id", str)
 station_id = NewType("station_id", str)
@@ -43,16 +44,20 @@ class StationQueue:
     def queue_list(self):
         return list(self._queue.queue)
 
-    def append(self, song: Song):
+    def add_song(self, song: Song):
         self._queue.put(song)
 
     def clear(self):
         while not self._queue.empty():
             self._queue.get()
 
-    def update_next_songs(self, songs: List[Song]):
-        print(songs)
-        raise NotImplementedError
+@dataclass
+class BroadcastServer:
+    hostname: str
+    password: str
+    user: str
+    # TODO: is there really no validator for port?
+    port: int
 
 
 class Station:
@@ -60,15 +65,25 @@ class Station:
         self,
         id: station_id,
         name: str,
+        description: str,
         owner_id: user_id,
+        genre: str,
+        broadcastServer: BroadcastServer,
+        bitrate: int,
         playlist: Playlist | None = None,
     ) -> None:
         self.id = id
         self.owner_id = owner_id
+        self.genre = genre
         self.name = name
+        self.description = description
+        self.broadcastServer = broadcastServer
+        self.bitrate = bitrate
+
+        self.queue = StationQueue(playlist)
+
         self.status = "Stopped"
         self.running = False
-        self.queue = StationQueue(playlist)
 
     def start_streaming(self):
         raise NotImplementedError
@@ -76,52 +91,58 @@ class Station:
     def pause_streaming(self):
         raise NotImplementedError
 
-    def unpause_streaming(self):
+    def resume_streaming(self):
         raise NotImplementedError
 
-    def get_status(self):
+    def get_current_song(self):
         raise NotImplementedError
+
+
+@dataclass
+class Tier:
+    max_stations: int
+    max_created_playlists: int
+    max_saved_playlists: int
+
+
+class Tiers(Enum):
+    FREE = Tier(
+        max_stations=0,
+        max_created_playlists=0,
+        max_saved_playlists=0,
+    )
+    BASIC = Tier(
+        max_stations=1,
+        max_created_playlists=1,
+        max_saved_playlists=3,
+    )
+    PREMIUM = Tier(
+        max_stations=3,
+        max_created_playlists=3,
+        max_saved_playlists=10,
+    )
+    ADMIN = Tier(
+        max_stations=99,
+        max_created_playlists=99,
+        max_saved_playlists=99,
+    )
 
 
 class User:
-    def __init__(self, name: str, email: EmailStr, hashed_password: str, id: user_id | None = None, **_) -> None:
+    def __init__(
+        self,
+        name: str,
+        email: EmailStr,
+        hashed_password: str,
+        tier: Optional[Tier] = Tiers.FREE,
+        id: Optional[user_id] = None,
+    ) -> None:
         self.name: str = name
         self.email: str = email
         self.hashed_password = hashed_password
         self.stations: List[Station] = []
         self.own_playlists: List[Playlist] = []
         self.saved_playlists: List[Playlist] = []
+        self.tier = tier
         if id:
             self.id: user_id
-
-    def create_playlist(self, playlist: Playlist):
-        print(playlist)
-        raise NotImplementedError
-
-    def update_playlist(self, playlist_id: playlist_id):
-        print(playlist_id)
-        raise NotImplementedError
-
-    def delete_playlist(self, playlist_id: playlist_id):
-        print(playlist_id)
-        raise NotImplementedError
-
-    def get_playlist(self, playlist_id: playlist_id):
-        print(playlist_id)
-        raise NotImplementedError
-
-    def share_playlist(self, playlist_id: playlist_id):
-        print(playlist_id)
-        raise NotImplementedError
-
-    def get_playlists(self):
-        raise NotImplementedError
-
-    def create_station(self):
-        raise NotImplementedError
-
-    def delete_station(self):
-        raise NotImplementedError
-
-    def get_station(self):
-        raise NotImplementedError

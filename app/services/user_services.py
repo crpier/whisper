@@ -1,7 +1,6 @@
 from pydantic.networks import EmailStr
-import sqlalchemy
 from sqlalchemy.exc import IntegrityError
-from app.models.domain_model import User, user_id
+from app.models.domain_model import Station, User, user_id, Playlist
 from app import schemas
 from app.schemas import user as user_schema
 from app.services import user_uow
@@ -31,7 +30,9 @@ def create_user(
 ) -> User:
     hashed_password = get_password_hash(create_obj.password)
     new_user = User(
-        name=create_obj.name, email=create_obj.email, hashed_password=hashed_password
+        name=create_obj.name,
+        email=create_obj.email,
+        hashed_password=hashed_password,
     )
     try:
         with uow:
@@ -44,15 +45,20 @@ def create_user(
         raise DuplicateException
     return created_user
 
-def get_user_by_email(email: EmailStr, uow: user_uow.AbstractUnitOfWork) -> Optional[User]:
+
+def get_user_by_email(
+    email: EmailStr, uow: user_uow.AbstractUnitOfWork
+) -> Optional[User]:
     with uow:
         user = uow.users.get_one_by(email=email)
         if not user:
             return
         return user
-        
 
-def get_user_by_id(id: user_id, uow: user_uow.AbstractUnitOfWork) -> Optional[User]:
+
+def get_user_by_id(
+    id: user_id, uow: user_uow.AbstractUnitOfWork
+) -> Optional[User]:
     with uow:
         user = uow.users.get_one_by(id=id)
         if not user:
@@ -62,7 +68,7 @@ def get_user_by_id(id: user_id, uow: user_uow.AbstractUnitOfWork) -> Optional[Us
 
 def get_users(uow: user_uow.AbstractUnitOfWork):
     with uow:
-        users =  uow.users.get_multi()
+        users = uow.users.get_multi()
         return users
 
 
@@ -80,8 +86,9 @@ def authenticate(
 
 
 def get_current_user(
-         uow: user_uow.AbstractUnitOfWork = Depends(user_uow.get_sqlalchemy_uow), token: str = Depends(reusable_oauth2)
-    ) -> schemas.User:
+    uow: user_uow.AbstractUnitOfWork = Depends(user_uow.get_sqlalchemy_uow),
+    token: str = Depends(reusable_oauth2),
+) -> schemas.User:
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
@@ -98,11 +105,21 @@ def get_current_user(
         uow.commit()
     return return_user
 
+
+def change_user_tier(
+    user_id: user_id,
+    tier: str,
+    uow: user_uow.AbstractUnitOfWork = Depends(user_uow.get_sqlalchemy_uow),
+):
+    raise NotImplementedError
+
 class InvalidCredentials(BaseException):
     pass
 
+
 class UserNotFound(BaseException):
     pass
+
 
 class DuplicateException(BaseException):
     pass
