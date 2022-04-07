@@ -26,7 +26,7 @@ class Playlist:
 
 
 class StationQueue:
-    def __init__(self, playlist: Playlist | None = None) -> None:
+    def __init__(self, playlist: Optional[Playlist] = None) -> None:
         new_queue = Queue()
         if playlist:
             for song in playlist.songs:
