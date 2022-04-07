@@ -57,7 +57,7 @@ spec:
         }
         stage('Unit tests') {
           steps {
-            # TODO: run tests for real
+            // TODO: run tests for real
             sh ". app/tests/test_env.sh; PYTHONPATH=. pytest app/services/test/test_user_services.py::TestCreateUser::test_password_is_not_added_as_is"
           }
         }
