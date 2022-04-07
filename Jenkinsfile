@@ -18,14 +18,14 @@ spec:
             }
         }
       environment {
-        registry = "tiannaru/backend-boilerplate"
+        registry = "crpier/whisper"
         registryCredential = 'dockertoken'
       }
       steps {
         script {
           // If this is the first run for build, the image won't exist and pull command will fail
-          sh "docker pull tiannaru/backend-boilerplate:latest-dev || true"
-          dockerImage = docker.build registry + ":latest-dev", "-f build/dockerfiles/Dockerfile --build-arg INSTALL_DEV=true --cache-from tiannaru/backend-boilerplate:latest-dev ."
+          sh "docker pull crpier/whisper:latest-dev || true"
+          dockerImage = docker.build registry + ":latest-dev", "-f build/dockerfiles/Dockerfile --build-arg INSTALL_DEV=true --cache-from crpier/whisper:latest-dev ."
           docker.withRegistry('https://index.docker.io/v1/', registryCredential) {
             dockerImage.push()
           }
@@ -38,15 +38,15 @@ spec:
               yaml '''
 spec:
   containers:
-  - name: backend-boilerplate-dev
-    image: tiannaru/backend-boilerplate:latest-dev
+  - name: whisper-dev
+    image: crpier/whisper:latest-dev
     imagePullPolicy: Always
     command:
     - sleep
     args:
     - 99d
               '''
-              defaultContainer 'backend-boilerplate-dev'
+              defaultContainer 'whisper-dev'
             }
       }
       stages {
@@ -79,15 +79,15 @@ spec:
             }
         }
       environment {
-        registry = "tiannaru/backend-boilerplate"
+        registry = "crpier/whisper"
         registryCredential = 'dockertoken'
       }
       steps {
         script {
           // God I just hate jenkins. If this is what modern software development
           // looks like I'm writing my mcdonalds aplication form right now
-          sh "docker pull tiannaru/backend-boilerplate:latest || true"
-          dockerImage = docker.build registry + ":latest", "-f build/dockerfiles/Dockerfile --build-arg INSTALL_DEV=true --cache-from tiannaru/backend-boilerplate:latest ."
+          sh "docker pull crpier/whisper:latest || true"
+          dockerImage = docker.build registry + ":latest", "-f build/dockerfiles/Dockerfile --build-arg INSTALL_DEV=true --cache-from crpier/whisper:latest ."
           docker.withRegistry('https://index.docker.io/v1/', registryCredential) {
             dockerImage.push()
           }
@@ -100,8 +100,8 @@ spec:
               yaml '''
 spec:
   containers:
-  - name: backend-boilerplate
-    image: tiannaru/backend-boilerplate:latest
+  - name: whisper
+    image: crpier/whisper:latest
     imagePullPolicy: Always
     command:
     - sleep
@@ -116,14 +116,14 @@ spec:
     - name: MARIADB_ROOT_PASSWORD
       value: changethislol
               '''
-              defaultContainer 'backend-boilerplate'
+              defaultContainer 'whisper'
             }
         }
         steps{
           container("mariadbtest") {
               sh "mysql -u localhost -P3306 --protocol tcp -pchangethislol -u root -e 'create database app'"
           }
-          container("backend-boilerplate") {
+          container("whisper") {
             sh ". app/tests/test_env.sh; ./prestart.sh"
             sh ". app/tests/test_env.sh; python app/initial_data.py"
             sh ". app/tests/test_env.sh; PYTHONPATH=. pytest -m 'component and not celery'"
