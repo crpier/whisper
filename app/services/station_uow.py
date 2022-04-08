@@ -1,7 +1,6 @@
 from abc import ABC
 from typing import Any, Dict
 
-import shout
 from app.adapters.station.repository import InMemoryStationRepository
 from app.models.domain_model import Station, station_id
 
@@ -17,24 +16,15 @@ class ThreadStationUnitOfWork(AbstractStationUnitOfWork):
     def __enter__(self):
         pass
 
-    def __exit__(self):
+    def __exit__(self, *_):
         pass
 
-    def register_connection(self, station: Station):
-        conn = shout.Shout()
-        conn.host = station.broadcastServer.hostname
-        conn.port = station.broadcastServer.port
-        conn.user = station.broadcastServer.user
-        conn.password = station.broadcastServer.password
-        conn.format = "mp3"
+    def add_station(self, station: Station):
+        self.stations.create(station)
 
-        conn.name = station.name
-        conn.mount = f"/{station.id}"
-        conn.genre = station.genre
-        conn.description = station.description
+    def run_station(self, station_id: station_id):
+        self.stations.play(station_id)
 
-        self.connections[station.id] = conn
-
-    def connect_to_server(self, station_id: station_id):
+    def connect_to_broadcast_server(self, station_id: station_id):
         conn: Any = self.connections.get(station_id)
         conn.open()
