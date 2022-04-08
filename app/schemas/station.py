@@ -2,7 +2,15 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from app.models.domain_model import BroadcastServer, Playlist, user_id, station_id
+from app.models.domain_model import user_id, station_id
+
+
+class BroadcastServerBase(BaseModel):
+    hostname: Optional[str] = None
+    password: Optional[str] = None
+    user: Optional[str] = None
+    port: Optional[int] = None
+
 
 # Shared properties
 class StationBase(BaseModel):
@@ -12,7 +20,7 @@ class StationBase(BaseModel):
     owner_id: Optional[user_id] = None
     genre: Optional[str] = None
     bitrate: Optional[int] = None
-    broadcastServer: Optional[BroadcastServer] = None
+    broadcastServer: Optional[BroadcastServerBase] = None
 
 
 # Properties to receive on item creation
@@ -22,8 +30,7 @@ class StationCreate(StationBase):
     owner_id: user_id
     genre: str
     bitrate: int
-    broadcastServer: BroadcastServer
-    playlist: Optional[Playlist] = None
+    broadcastServer: BroadcastServerBase
 
 
 # Properties to receive on item update

@@ -1,4 +1,5 @@
 from abc import ABC
+from functools import lru_cache
 from typing import Any, Dict
 
 from app.adapters.station.repository import InMemoryStationRepository
@@ -28,3 +29,7 @@ class ThreadStationUnitOfWork(AbstractStationUnitOfWork):
     def connect_to_broadcast_server(self, station_id: station_id):
         conn: Any = self.connections.get(station_id)
         conn.open()
+
+@lru_cache
+def get_thread_station_uow():
+    return ThreadStationUnitOfWork()

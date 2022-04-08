@@ -51,7 +51,7 @@ class StationQueue:
         while not self._queue.empty():
             self._queue.get()
 
-@dataclass
+@dataclass(frozen=True)
 class BroadcastServer:
     hostname: str
     password: str
@@ -98,7 +98,7 @@ class Station:
         raise NotImplementedError
 
 
-@dataclass
+@dataclass(frozen=True)
 class Tier:
     max_stations: int
     max_created_playlists: int

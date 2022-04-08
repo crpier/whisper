@@ -51,7 +51,9 @@ def test_play_function_uses_shout_connection(
     test_conn.open = MagicMock()
     test_conn.send = MagicMock()
     test_conn.sync = MagicMock()
+
     test_repo._play_function(test_station, test_conn)
+
     test_conn.open.assert_called_once()
     test_conn.sync.assert_called()
     test_conn.send.assert_called()
