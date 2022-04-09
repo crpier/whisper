@@ -30,5 +30,5 @@ spec:
       serviceAccountName: backend-boilerplate
       containers:
       - name: backend-boilerplate
-        image: tiannaru/backend-boilerplate
+        image: crpier/backend-boilerplate
         imagePullPolicy: Always
