@@ -1,127 +1,56 @@
 from abc import ABC
-from queue import Queue
-from typing import Dict, List, Tuple
-from threading import Thread
-from pathlib import Path
-import shout
-from app.models.domain_model import Station, station_id, user_id
-
-temp_queue = Queue()
-temp_queue.put("/home/crpier/Downloads/music/1.mp3")
-temp_queue.put("/home/crpier/Downloads/music/2.mp3")
-temp_queue.put("/home/crpier/Downloads/music/3.mp3")
-temp_queue.put("/home/crpier/Downloads/music/4.mp3")
-temp_queue.put("/home/crpier/Downloads/music/5.mp3")
+from typing import Dict, Generic, List, Tuple, TypeVar
+from app.models.domain_model import Station, station_id
 
 
 class AbstractStationRepository(ABC):
     pass
 
 
-class ShoutWrapper:
-    def __init__(
-        self,
-        host: str,
-        port: int,
-        password: str,
-        name: str,
-        id: str,
-        genre: str,
-        description: str,
-        format: str = "mp3",
-        user: str = "source",
-    ) -> None:
-        self.conn = shout.Shout()
+T = TypeVar("T")
 
-        self.conn.host = host
-        self.conn.port = port
-        self.conn.password = password
-        self.conn.name = name
-        self.conn.mount = f"/{id}"
-        self.conn.genre = genre
-        self.conn.description = description
-        self.conn.format = format
-        self.conn.user = user
+# TODO investigate how to handle the threads
+# from copy import deepcopy
+deepcopy = lambda x: x
 
-    def open(self):
-        self.conn.open()
-
-    def send(self, data: bytes):
-        self.conn.send(data)
-
-    def sync(self):
-        self.conn.sync()
-
-    @classmethod
-    def from_station(cls, station: Station):
-        return cls(
-            host=station.broadcastServer.hostname,
-            port=station.broadcastServer.port,
-            password=station.broadcastServer.password,
-            user=station.broadcastServer.user,
-            id=station.id,
-            name=station.name,
-            genre=station.genre,
-            description=station.description,
-        )
-
-
-class InMemoryStationRepository(AbstractStationRepository):
+class InMemoryStationRepository(Generic[T], AbstractStationRepository):
     def __init__(self) -> None:
-        self._container: Dict[str, Tuple[Station, Thread, ShoutWrapper]] = {}
+        self._container: Dict[str, Tuple[Station, T]] = {}
 
-    def create(self, new_station: Station):
-        if self._container.get(new_station.id) is not None:
-            return StationAlreadyExists
+    def add(self, aggregate: Tuple[Station, T]) -> Tuple[Station, T]:
+        station_id = aggregate[0].id
+        if self._container.get(station_id) is not None:
+            raise StationAlreadyExists
+        self._container[station_id] = aggregate
+        return deepcopy(aggregate)
 
-        new_conn = ShoutWrapper.from_station(new_station)
-        new_thread = Thread(
-            target=self._play_function, args=[new_station, new_conn], daemon=True
-        )
-        self._container[new_station.id] = (new_station, new_thread, new_conn)
+    def get_all_stations(self) -> List[Station]:
+        return [deepcopy(station) for (station, _) in self._container.values()]
 
-    def play(self, station_id):
-        res = self._container.get(station_id)
-        if res is None:
+    def get_station(self, station_id: station_id) -> Station:
+        station, _ = self._container[station_id]
+        copy = deepcopy(station)
+        return copy
+
+    def get_meta(self, station_id: station_id):
+        _, meta = self._container[station_id]
+        return meta
+
+    def get(self, station_id: station_id) -> Tuple[Station, T]:
+        source_aggregate = self._container.get(station_id)
+        if source_aggregate is None:
             raise StationDoesNotExist
-        _, thread, _ = res
-        thread.start()
-
-    def _play_function(self, station: Station, conn: ShoutWrapper):
-        conn.open()
-        song_path = Path(temp_queue.get())
-        with song_path.open("rb") as music_file:
-            nbuf = music_file.read(station.bitrate)
-            while True:
-                buf = nbuf
-                nbuf = music_file.read(station.bitrate)
-                if len(buf) == 0:
-                    break
-                conn.send(buf)
-                conn.sync()
-
-    def get_all(self) -> List[Station]:
-        return [station for (station, _, _) in self._container.values()]
-
-    def get_stations_by_user_id(self, user_id: user_id):
-        result: List[Tuple[str, Station]] = []
-        for key in self._container.keys():
-            if key.startswith(user_id):
-                result.append((key, self._container.get(key)))  # type: ignore
-        return result
-
-    def get(self, station_id: station_id) -> Station:
-        return self._container[station_id][0]
+        copy = deepcopy(source_aggregate)
+        return copy
 
     def remove(self, station_id: station_id):
         if self._container.get(station_id) is None:
             raise StationDoesNotExist
         del self._container[station_id]
 
-
-class StationAlreadyExists(BaseException):
+class StationDoesNotExist(BaseException):
     pass
 
 
-class StationDoesNotExist(BaseException):
+class StationAlreadyExists(BaseException):
     pass

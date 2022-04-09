@@ -3,7 +3,7 @@ from queue import Queue
 from typing import List, NewType, Optional
 
 from pydantic.networks import EmailStr
-from sqlalchemy.sql.sqltypes import Enum
+from enum import Enum
 
 user_id = NewType("user_id", str)
 station_id = NewType("station_id", str)
@@ -51,6 +51,7 @@ class StationQueue:
         while not self._queue.empty():
             self._queue.get()
 
+
 @dataclass(frozen=True)
 class BroadcastServer:
     hostname: str
@@ -58,6 +59,12 @@ class BroadcastServer:
     user: str
     # TODO: is there really no validator for port?
     port: int
+
+
+class State(Enum):
+    PAUSED = "paused"
+    PLAYING = "playing"
+    STOPPED = "stopped"
 
 
 class Station:
@@ -82,47 +89,42 @@ class Station:
 
         self.queue = StationQueue(playlist)
 
-        self.status = "Stopped"
+        self.state: State = State.STOPPED
         self.running = False
 
-    def start_streaming(self):
-        raise NotImplementedError
-
-    def pause_streaming(self):
-        raise NotImplementedError
-
-    def resume_streaming(self):
-        raise NotImplementedError
-
-    def get_current_song(self):
-        raise NotImplementedError
-
+    def set_state(self, state: State):
+        self.state = state
 
 @dataclass(frozen=True)
-class Tier:
+class TierType:
     max_stations: int
+    max_private_stations: int
     max_created_playlists: int
     max_saved_playlists: int
 
 
-class Tiers(Enum):
-    FREE = Tier(
+class Tier(Enum):
+    FREE = TierType(
         max_stations=0,
+        max_private_stations=0,
         max_created_playlists=0,
         max_saved_playlists=0,
     )
-    BASIC = Tier(
+    BASIC = TierType(
         max_stations=1,
+        max_private_stations=0,
         max_created_playlists=1,
         max_saved_playlists=3,
     )
-    PREMIUM = Tier(
+    PREMIUM = TierType(
         max_stations=3,
+        max_private_stations=1,
         max_created_playlists=3,
         max_saved_playlists=10,
     )
-    ADMIN = Tier(
+    ADMIN = TierType(
         max_stations=99,
+        max_private_stations=99,
         max_created_playlists=99,
         max_saved_playlists=99,
     )
@@ -134,7 +136,7 @@ class User:
         name: str,
         email: EmailStr,
         hashed_password: str,
-        tier: Optional[Tier] = Tiers.FREE,
+        tier: Tier = Tier.FREE,
         id: Optional[user_id] = None,
     ) -> None:
         self.name: str = name
