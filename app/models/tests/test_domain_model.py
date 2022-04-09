@@ -31,7 +31,7 @@ def empty_queue():
 @fixture
 def one_song_queue():
     new_queue = StationQueue()
-    new_queue.append(get_test_song(1))
+    new_queue.add_song(get_test_song(1))
     return new_queue
 
 
@@ -55,15 +55,25 @@ def three_song_playlist():
 def station_with_playlist():
     new_station = Station(
         id=station_id("test"),
+        description="Test description",
+        owner_id=user_id("123"),
+        genre="test genre",
+        bitrate=1024,
         name="test",
         playlist=get_test_playlist(),
+        broadcastServer=BroadcastServer(
+            hostname="test",
+            user="test",
+            password="test_pass",
+            port=1234
+        )
     )
     return new_station
 
 
 def test_queue_append_adds_song_at_end(empty_queue, base_song):
     expected_queue_list = [base_song]
-    empty_queue.append(base_song)
+    empty_queue.add_song(base_song)
     assert empty_queue.queue_list == expected_queue_list
 
 
