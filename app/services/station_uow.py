@@ -68,11 +68,11 @@ class ShoutWrapper:
 
 
 temp_queue = Queue()
-temp_queue.put("/home/crpier/Downloads/music/1.mp3")
-temp_queue.put("/home/crpier/Downloads/music/2.mp3")
-temp_queue.put("/home/crpier/Downloads/music/3.mp3")
-temp_queue.put("/home/crpier/Downloads/music/4.mp3")
-temp_queue.put("/home/crpier/Downloads/music/5.mp3")
+temp_queue.put("test_music/1.mp3")
+temp_queue.put("test_music/2.mp3")
+temp_queue.put("test_music/3.mp3")
+temp_queue.put("test_music/4.mp3")
+temp_queue.put("test_music/5.mp3")
 
 
 @dataclass
