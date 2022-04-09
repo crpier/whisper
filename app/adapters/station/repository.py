@@ -3,7 +3,6 @@ from queue import Queue
 from typing import Dict, List, Tuple
 from threading import Thread
 from pathlib import Path
-import sys
 import shout
 from app.models.domain_model import Station, station_id, user_id
 
@@ -101,19 +100,6 @@ class InMemoryStationRepository(AbstractStationRepository):
                 conn.send(buf)
                 conn.sync()
 
-    def _register_connection(self, station: Station):
-        conn = shout.Shout()
-        conn.host = station.broadcastServer.hostname
-        conn.port = station.broadcastServer.port
-        conn.user = station.broadcastServer.user
-        conn.password = station.broadcastServer.password
-        conn.format = "mp3"
-
-        conn.name = station.name
-        conn.mount = f"/{station.id}"
-        conn.genre = station.genre
-        conn.description = station.description
-
     def get_all(self) -> List[Station]:
         return [station for (station, _, _) in self._container.values()]
 
@@ -127,10 +113,10 @@ class InMemoryStationRepository(AbstractStationRepository):
     def get(self, station_id: station_id) -> Station:
         return self._container[station_id][0]
 
-    def remove(self, station: Station):
-        if self._container.get(station.id) is None:
+    def remove(self, station_id: station_id):
+        if self._container.get(station_id) is None:
             raise StationDoesNotExist
-        del self._container[station.id]
+        del self._container[station_id]
 
 
 class StationAlreadyExists(BaseException):
