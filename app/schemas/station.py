@@ -38,6 +38,14 @@ class StationUpdate(StationBase):
     pass
 
 
-# Properties to return to client
-class Station(StationBase):
+class StationInDBBase(StationBase):
+    class Config:
+        orm_mode = True
+
+
+class Station(StationInDBBase):
+    pass
+
+
+class StationInDB(StationInDBBase):
     pass
