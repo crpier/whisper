@@ -3,6 +3,7 @@ from queue import Queue
 from typing import List, NewType, Optional
 
 from pydantic.networks import EmailStr
+from enum import Enum
 
 user_id = NewType("user_id", str)
 station_id = NewType("station_id", str)
@@ -25,7 +26,7 @@ class Playlist:
 
 
 class StationQueue:
-    def __init__(self, playlist: Playlist | None = None) -> None:
+    def __init__(self, playlist: Optional[Playlist] = None) -> None:
         new_queue = Queue()
         if playlist:
             for song in playlist.songs:
@@ -43,16 +44,27 @@ class StationQueue:
     def queue_list(self):
         return list(self._queue.queue)
 
-    def append(self, song: Song):
+    def add_song(self, song: Song):
         self._queue.put(song)
 
     def clear(self):
         while not self._queue.empty():
             self._queue.get()
 
-    def update_next_songs(self, songs: List[Song]):
-        print(songs)
-        raise NotImplementedError
+
+@dataclass(frozen=True)
+class BroadcastServer:
+    hostname: str
+    password: str
+    user: str
+    # TODO: is there really no validator for port?
+    port: int
+
+
+class State(Enum):
+    PAUSED = "paused"
+    PLAYING = "playing"
+    STOPPED = "stopped"
 
 
 class Station:
@@ -60,68 +72,79 @@ class Station:
         self,
         id: station_id,
         name: str,
+        description: str,
         owner_id: user_id,
-        playlist: Playlist | None = None,
+        genre: str,
+        broadcastServer: BroadcastServer,
+        bitrate: int,
+        playlist: Optional[Playlist] = None,
     ) -> None:
         self.id = id
         self.owner_id = owner_id
+        self.genre = genre
         self.name = name
-        self.status = "Stopped"
-        self.running = False
+        self.description = description
+        self.broadcastServer = broadcastServer
+        self.bitrate = bitrate
+
         self.queue = StationQueue(playlist)
 
-    def start_streaming(self):
-        raise NotImplementedError
+        self.state: State = State.STOPPED
+        self.running = False
 
-    def pause_streaming(self):
-        raise NotImplementedError
+    def set_state(self, state: State):
+        self.state = state
 
-    def unpause_streaming(self):
-        raise NotImplementedError
+@dataclass(frozen=True)
+class TierType:
+    max_stations: int
+    max_private_stations: int
+    max_created_playlists: int
+    max_saved_playlists: int
 
-    def get_status(self):
-        raise NotImplementedError
+
+class Tier(Enum):
+    FREE = TierType(
+        max_stations=0,
+        max_private_stations=0,
+        max_created_playlists=0,
+        max_saved_playlists=0,
+    )
+    BASIC = TierType(
+        max_stations=1,
+        max_private_stations=0,
+        max_created_playlists=1,
+        max_saved_playlists=3,
+    )
+    PREMIUM = TierType(
+        max_stations=3,
+        max_private_stations=1,
+        max_created_playlists=3,
+        max_saved_playlists=10,
+    )
+    ADMIN = TierType(
+        max_stations=99,
+        max_private_stations=99,
+        max_created_playlists=99,
+        max_saved_playlists=99,
+    )
 
 
 class User:
-    def __init__(self, name: str, email: EmailStr, hashed_password: str, id: user_id | None = None, **_) -> None:
+    def __init__(
+        self,
+        name: str,
+        email: EmailStr,
+        hashed_password: str,
+        tier: Tier = Tier.FREE,
+        id: Optional[user_id] = None,
+    ) -> None:
         self.name: str = name
         self.email: str = email
         self.hashed_password = hashed_password
         self.stations: List[Station] = []
         self.own_playlists: List[Playlist] = []
         self.saved_playlists: List[Playlist] = []
+        self.tier = tier
         if id:
             self.id: user_id
-
-    def create_playlist(self, playlist: Playlist):
-        print(playlist)
-        raise NotImplementedError
-
-    def update_playlist(self, playlist_id: playlist_id):
-        print(playlist_id)
-        raise NotImplementedError
-
-    def delete_playlist(self, playlist_id: playlist_id):
-        print(playlist_id)
-        raise NotImplementedError
-
-    def get_playlist(self, playlist_id: playlist_id):
-        print(playlist_id)
-        raise NotImplementedError
-
-    def share_playlist(self, playlist_id: playlist_id):
-        print(playlist_id)
-        raise NotImplementedError
-
-    def get_playlists(self):
-        raise NotImplementedError
-
-    def create_station(self):
-        raise NotImplementedError
-
-    def delete_station(self):
-        raise NotImplementedError
-
-    def get_station(self):
-        raise NotImplementedError

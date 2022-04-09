@@ -8,7 +8,7 @@ metadata:
     cert-manager.io/cluster-issuer: letsencrypt-production
 spec:
   rules:
-    - host: backend-boilerplate.tiannaru.xyz
+    - host: whisper.crpier.xyz
       http:
         paths:
           - path: /
@@ -17,5 +17,5 @@ spec:
               servicePort: 80
   tls:
     - hosts:
-      - backend-boilerplate.tiannaru.xyz
-      secretName: backend-boilerplate-tls
+      - whisper.crpier.xyz
+      secretName: whisper-tls

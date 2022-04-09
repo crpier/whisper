@@ -21,7 +21,6 @@ user_table = Table(
     Column("name", String(255)),
     Column("email", String(255), unique=True, index=True, nullable=False),
     Column("hashed_password", String(255), nullable=False),
-    # TODO: stations, own_playlists, saved_playlists
 )
 
 mapper_registry.map_imperatively(User, user_table)
@@ -60,6 +59,8 @@ class AbstractUserRepository(ABC):
     def delete_by_email(self, email: EmailStr):
         raise NotImplementedError
 
+    def to_domain_user(self, user: User) -> User:
+        raise NotImplementedError
 
 
 class SqlAlchemyUserRepository(AbstractUserRepository):
@@ -103,6 +104,8 @@ class SqlAlchemyUserRepository(AbstractUserRepository):
         deleted_rows = self.session.query(User).filter_by(email=email).delete()
         return deleted_rows
 
+    def to_domain_user(self, user: User) -> User:
+        raise NotImplementedError
 
 
 class FakeUserRepository(AbstractUserRepository):
@@ -113,7 +116,9 @@ class FakeUserRepository(AbstractUserRepository):
     def get_one_by(self, **kwargs) -> Optional[User]:
         candidates = self.container.copy()
         for key, value in kwargs.items():
-            candidates = [user for user in candidates if user.__dict__[key] == value]
+            candidates = [
+                user for user in candidates if user.__dict__[key] == value
+            ]
 
     def get_by_id(self, id: user_id) -> Optional[User]:
         res = [user for user in self.container if user.id == id]
@@ -147,4 +152,5 @@ class FakeUserRepository(AbstractUserRepository):
             id_to_del = self.container.index(user_to_del)
             del self.container[id_to_del]
 
-
+    def to_domain_user(self, user: User) -> User:
+        raise NotImplementedError

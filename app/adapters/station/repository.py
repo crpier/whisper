@@ -1,58 +1,56 @@
-from abc import ABC, abstractmethod
-from typing import Dict, List, Tuple
+from abc import ABC
+from typing import Dict, Generic, List, Tuple, TypeVar
+from app.models.domain_model import Station, station_id
 
-from app.models.domain_model import Station, station_id, user_id
 
 class AbstractStationRepository(ABC):
-    @abstractmethod
-    def get(self, id: station_id) -> Station:
-        raise NotImplementedError
-
-    @abstractmethod
-    def create(self, station: Station):
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_all_stations(self) -> List[Station]:
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_stations_by_user(self, user_id: user_id) -> List[Station]:
-        raise NotImplementedError
-
-    @abstractmethod
-    def remove(self, station: Station):
-        raise NotImplementedError
+    pass
 
 
-class ThreadStationRepository(AbstractStationRepository):
+T = TypeVar("T")
+
+# TODO investigate how to handle the threads
+# from copy import deepcopy
+deepcopy = lambda x: x
+
+class InMemoryStationRepository(Generic[T], AbstractStationRepository):
     def __init__(self) -> None:
-        self._container: Dict[str, Station] = {}
+        self._container: Dict[str, Tuple[Station, T]] = {}
 
-    @classmethod
-    def make_container_key(cls, user_id: user_id, station_id: station_id):
-        return user_id + station_id
+    def add(self, aggregate: Tuple[Station, T]) -> Tuple[Station, T]:
+        station_id = aggregate[0].id
+        if self._container.get(station_id) is not None:
+            raise StationAlreadyExists
+        self._container[station_id] = aggregate
+        return deepcopy(aggregate)
 
-    def create(self, user_id: user_id, station: Station):
-        key = self.make_container_key(user_id, station.id)
-        if self._container.get(key) is not None:
-            return StationAlreadyExists
+    def get_all_stations(self) -> List[Station]:
+        return [deepcopy(station) for (station, _) in self._container.values()]
 
-    def get_all_stations(self):
-        return list(self._container)
+    def get_station(self, station_id: station_id) -> Station:
+        station, _ = self._container[station_id]
+        copy = deepcopy(station)
+        return copy
 
-    def get_stations_by_user(self, user_id: user_id):
-        result: List[Tuple[str, Station]] = []
-        for key in self._container.keys():
-            if key.startswith(user_id):
-                result.append((key, self._container.get(key)))  # type: ignore
-        return result
+    def get_meta(self, station_id: station_id):
+        _, meta = self._container[station_id]
+        return meta
 
-    def remove(self, station: Station):
-        key = self.make_container_key(station.owner_id, station.id)
-        del self._container[key]
+    def get(self, station_id: station_id) -> Tuple[Station, T]:
+        source_aggregate = self._container.get(station_id)
+        if source_aggregate is None:
+            raise StationDoesNotExist
+        copy = deepcopy(source_aggregate)
+        return copy
+
+    def remove(self, station_id: station_id):
+        if self._container.get(station_id) is None:
+            raise StationDoesNotExist
+        del self._container[station_id]
+
+class StationDoesNotExist(BaseException):
+    pass
 
 
 class StationAlreadyExists(BaseException):
     pass
-

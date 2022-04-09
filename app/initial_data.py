@@ -15,7 +15,10 @@ def init() -> None:
         name=settings.FIRST_SUPERUSER_NAME,
         password=settings.FIRST_SUPERUSER_PASSWORD,
     )
-    user_services.create_user(create_obj=user_in, uow=get_sqlalchemy_uow())
+    try:
+        user_services.create_user(create_obj=user_in, uow=get_sqlalchemy_uow())
+    except user_services.DuplicateException:
+        pass
 
 
 def main() -> None:

@@ -2,6 +2,7 @@ FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
 
 WORKDIR /app/
 
+RUN apt-get update && apt-get install -y libshout3-dev
 # Install Poetry
 # TODO make dependabot look at this, or put it in a file? 🤔
 RUN curl -sSL https://install.python-poetry.org | python3 -

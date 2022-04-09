@@ -21,7 +21,7 @@ spec:
         vault.hashicorp.com/agent-inject-template-env: |
           {{- with secret "secret/backend-boilerplate/main" -}}
           SQLALCHEMY_DATABASE_URI=mariadb+pymysql://{{ .Data.first_db_user }}:{{ .Data.db_first_pass }}@mariadb-service.backend-boilerplate.svc.cluster.local:3306/{{ .Data.db_name }}
-          FIRST_SUPERUSER={{ .Data.first_superuser }}
+          FIRST_SUPERUSER_EMAIL={{ .Data.first_superuser }}
           FIRST_SUPERUSER_PASSWORD={{ .Data.first_superuser_password }}
           {{- end -}}
       labels:
@@ -29,6 +29,9 @@ spec:
     spec:
       serviceAccountName: backend-boilerplate
       containers:
-      - name: backend-boilerplate
-        image: tiannaru/backend-boilerplate
+      - name: whisper
+        image: crpier/whisper
         imagePullPolicy: Always
+        env:
+          - name: FIRST_SUPERUSER_NAME
+            value: admin
