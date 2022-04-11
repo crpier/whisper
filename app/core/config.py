@@ -1,6 +1,7 @@
 import logging
+from pathlib import Path
 import secrets
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from pydantic import AnyHttpUrl, BaseSettings, EmailStr, HttpUrl, validator
 
@@ -38,6 +39,7 @@ class Settings(BaseSettings):
 
     PROJECT_NAME: str = "backend-boilerplate"
     SENTRY_DSN: Optional[HttpUrl] = None
+    SONGS_PATH: Path = Path("test_music")
 
     # TODO
     # @validator("SENTRY_DSN", pre=True)
@@ -104,7 +106,6 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER_NAME: str
     FIRST_SUPERUSER_PASSWORD: str
     USERS_OPEN_REGISTRATION: bool = False
-
     class Config:
         case_sensitive = True
 
