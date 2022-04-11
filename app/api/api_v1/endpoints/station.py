@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 
 from fastapi import APIRouter, Depends
 
@@ -35,6 +35,7 @@ def unpause_station(
 ) -> None:
     station_services.unpause_station(station_id, station_uow)
 
+
 @router.put("/{station_id}/pause")
 def pause_station(
     station_id: station_id,
@@ -42,7 +43,6 @@ def pause_station(
     current_user: User = Depends(user_services.get_current_user),
 ) -> None:
     station_services.pause_station(station_id, station_uow)
-
 
 
 @router.post("/", response_model=schemas.Station)
@@ -68,3 +68,15 @@ def delete_station(
     Retrieve users.
     """
     station_services.delete_station(station_id, station_uow)
+
+
+@router.get("/{station_id}/next_songs")
+def get_queue(
+    station_id: station_id,
+    station_uow: ThreadedStationUnitOfWork = Depends(get_thread_station_uow),
+    current_user: User = Depends(user_services.get_current_user),
+) -> List[Any]:
+    """
+    Retrieve users.
+    """
+    return station_services.get_next_songs(station_id, station_uow)

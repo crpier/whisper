@@ -28,3 +28,9 @@ def unpause_station(station_id: station_id, uow: ThreadedStationUnitOfWork):
 def pause_station(station_id: station_id, uow: ThreadedStationUnitOfWork):
     with uow:
         return uow.pause_station(station_id)
+
+
+# Queue stuff
+def get_next_songs(station_id: station_id, uow: ThreadedStationUnitOfWork):
+    with uow:
+        return uow.get_next_songs(station_id)

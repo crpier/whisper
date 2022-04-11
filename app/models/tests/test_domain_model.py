@@ -22,19 +22,6 @@ def base_song():
     return new_song
 
 
-@fixture
-def empty_queue():
-    new_queue = StationQueue()
-    return new_queue
-
-
-@fixture
-def one_song_queue():
-    new_queue = StationQueue()
-    new_queue.add_song(get_test_song(1))
-    return new_queue
-
-
 def get_test_playlist():
     songs = [get_test_song(1), get_test_song(2), get_test_song(3)]
     new_playlist = Playlist(
@@ -60,7 +47,6 @@ def station_with_playlist():
         genre="test genre",
         bitrate=1024,
         name="test",
-        playlist=get_test_playlist(),
         broadcastServer=BroadcastServer(
             hostname="test",
             user="test",
@@ -69,30 +55,6 @@ def station_with_playlist():
         )
     )
     return new_station
-
-
-def test_queue_append_adds_song_at_end(empty_queue, base_song):
-    expected_queue_list = [base_song]
-    empty_queue.add_song(base_song)
-    assert empty_queue.queue_list == expected_queue_list
-
-
-def test_queue_from_playlist_has_same_songs(three_song_playlist):
-    test_queue = StationQueue(three_song_playlist)
-    assert test_queue.queue_list == three_song_playlist.songs
-
-
-def test_station_queue_is_empty_after_clear(one_song_queue):
-    one_song_queue.clear()
-    assert one_song_queue.queue_list == []
-    assert one_song_queue.current_song == None
-
-
-def test_current_queue_song_is_correct(one_song_queue):
-    current_song = one_song_queue.current_song
-    assert current_song is not None
-    expected_song = one_song_queue._queue.get()
-    assert expected_song == current_song
 
 
 @mark.skip("Not Implemented")
