@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from queue import Queue
 from typing import List, NewType, Optional
 
 from pydantic.networks import EmailStr
@@ -8,13 +7,16 @@ from enum import Enum
 user_id = NewType("user_id", str)
 station_id = NewType("station_id", str)
 playlist_id = NewType("playlist_id", str)
+song_id = NewType("song_id", str)
 
 
 @dataclass(frozen=True)
 class Song:
+    id: song_id
     title: str
     album: str
     artist: str
+    source: str
 
 
 @dataclass(frozen=True)
@@ -23,33 +25,6 @@ class Playlist:
     songs: List[Song]
     public: bool
     owner_id: user_id
-
-
-class StationQueue:
-    def __init__(self, playlist: Optional[Playlist] = None) -> None:
-        new_queue = Queue()
-        if playlist:
-            for song in playlist.songs:
-                new_queue.put(song)
-        self._queue = new_queue
-
-    @property
-    def current_song(self) -> Optional[Song]:
-        try:
-            return self._queue.queue[0]
-        except IndexError:
-            return None
-
-    @property
-    def queue_list(self):
-        return list(self._queue.queue)
-
-    def add_song(self, song: Song):
-        self._queue.put(song)
-
-    def clear(self):
-        while not self._queue.empty():
-            self._queue.get()
 
 
 @dataclass(frozen=True)
@@ -77,7 +52,6 @@ class Station:
         genre: str,
         broadcastServer: BroadcastServer,
         bitrate: int,
-        playlist: Optional[Playlist] = None,
     ) -> None:
         self.id = id
         self.owner_id = owner_id
@@ -86,8 +60,6 @@ class Station:
         self.description = description
         self.broadcastServer = broadcastServer
         self.bitrate = bitrate
-
-        self.queue = StationQueue(playlist)
 
         self.state: State = State.STOPPED
         self.running = False
