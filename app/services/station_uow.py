@@ -2,14 +2,14 @@ from dataclasses import dataclass
 from queue import Queue
 from abc import ABC
 from functools import lru_cache
-from pathlib import Path
 from threading import Event, Thread
-from typing import Dict, Type, List
-
+from typing import Any, List
+from app.services.song_uow import InMemorySongUow
 import shout
+from pathlib import Path
 
 from app.adapters.station.repository import InMemoryStationRepository
-from app.models.domain_model import Station, station_id, State
+from app.models.domain_model import Station, station_id, State, Song, song_id
 
 
 class AbstractStationUnitOfWork(ABC):
@@ -67,14 +67,6 @@ class ShoutWrapper:
         )
 
 
-temp_queue = Queue()
-temp_queue.put("test_music/1.mp3")
-temp_queue.put("test_music/2.mp3")
-temp_queue.put("test_music/3.mp3")
-temp_queue.put("test_music/4.mp3")
-temp_queue.put("test_music/5.mp3")
-
-
 @dataclass
 class StationEvents:
     def __init__(self) -> None:
@@ -87,6 +79,7 @@ class StationMeta:
     thread: Thread
     conn: ShoutWrapper
     events: StationEvents
+    queue: Queue
 
     def set_event(self, event_name: str):
         event: Event = getattr(self.events, event_name)
@@ -105,6 +98,7 @@ class StationMeta:
 
 class ThreadedStationUnitOfWork(AbstractStationUnitOfWork):
     repo = InMemoryStationRepository[StationMeta]()
+    song_uow = InMemorySongUow()
 
     def __enter__(self):
         pass
@@ -113,34 +107,70 @@ class ThreadedStationUnitOfWork(AbstractStationUnitOfWork):
         pass
 
     def create_station(self, new_station: Station):
+        new_queue = Queue()
+        new_queue.put(Song(
+            title="test",
+            album="test",
+            artist="test",
+            source="test_music/1.mp3",
+            id=song_id("test1")
+        ))
+        new_queue.put(Song(
+            title="test",
+            album="test",
+            artist="test",
+            source="test_music/2.mp3",
+            id=song_id("test2")
+        ))
+        new_queue.put(Song(
+            title="test",
+            album="test",
+            artist="test",
+            source="test_music/3.mp3",
+            id=song_id("test3")
+        ))
+        new_queue.put(Song(
+            title="test",
+            album="test",
+            artist="test",
+            source="test_music/4.mp3",
+            id=song_id("test4")
+        ))
         new_events = StationEvents()
         new_conn = ShoutWrapper.from_station(new_station)
         new_thread = Thread(
             target=self._play_function,
-            args=[new_station, new_conn, new_events],
+            args=[new_station, new_conn, new_events, new_queue],
             daemon=True,
         )
+
         station_meta = StationMeta(
-            thread=new_thread, conn=new_conn, events=new_events
+            thread=new_thread,
+            conn=new_conn,
+            events=new_events,
+            queue=new_queue,
         )
         station_meta.set_event("play")
         aggregate = (new_station, station_meta)
         self.repo.add(aggregate)
 
     def _play_function(
-        self, station: Station, conn: ShoutWrapper, events: StationEvents
+        self,
+        station: Station,
+        conn: ShoutWrapper,
+        events: StationEvents,
+        queue: Queue[Song],
     ):
         conn.open()
-        song_path = Path(temp_queue.get())
-        with song_path.open("rb") as music_file:
-            nbuf = music_file.read(station.bitrate)
-            while not events.stop.is_set() and events.play.wait():
-                buf = nbuf
-                nbuf = music_file.read(station.bitrate)
-                if len(buf) == 0:
-                    break
-                conn.send(buf)
-                conn.sync()
+        while True:
+            song = queue.get()
+            stream_generator = self.song_uow.stream_song_generator(
+                song.id, station.bitrate
+            )
+            for buf in stream_generator:
+                if not events.stop.is_set() and events.play.wait():
+                    conn.send(buf)
+                    conn.sync()
 
     def remove_station(self, station_id: station_id):
         self.stop_station(station_id)
@@ -165,6 +195,11 @@ class ThreadedStationUnitOfWork(AbstractStationUnitOfWork):
         stationMeta = self.repo.get_meta(station_id)
         stationMeta.set_event("stop")
         stationMeta.close_connection()
+
+    def get_next_songs(self, station_id: station_id) -> List[Any]:
+        station_meta = self.repo.get_meta(station_id)
+        queue_as_list = list(station_meta.queue.queue)
+        return queue_as_list
 
 
 @lru_cache
