@@ -3,6 +3,10 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.api.api_v1.api import api_router
 from app.core.config import settings
+from app.initial_data import init_in_memory_songs
+
+# Bootstrapping section. Might move this in a separate script
+init_in_memory_songs()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
