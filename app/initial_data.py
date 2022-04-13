@@ -23,45 +23,22 @@ def init() -> None:
         pass
 
 
+def make_song(file_name: str):
+    return Song(
+        title="name",
+        album="test",
+        artist="test",
+        source=f"{settings.SONGS_PATH}/{file_name}",
+        id=song_id(file_name),
+    )
+
+
 def init_in_memory_songs():
     new_uow = InMemorySongUow()
-
-    new_uow.register_song(
-        Song(
-            title="test",
-            album="test",
-            artist="test",
-            source="test_music/1.mp3",
-            id=song_id("test1"),
-        )
-    )
-    new_uow.register_song(
-        Song(
-            title="test",
-            album="test",
-            artist="test",
-            source="test_music/2.mp3",
-            id=song_id("test2"),
-        )
-    )
-    new_uow.register_song(
-        Song(
-            title="test",
-            album="test",
-            artist="test",
-            source="test_music/3.mp3",
-            id=song_id("test3"),
-        )
-    )
-    new_uow.register_song(
-        Song(
-            title="test",
-            album="test",
-            artist="test",
-            source="test_music/4.mp3",
-            id=song_id("test4"),
-        )
-    )
+    new_uow.register_song(make_song("1.mp3"))
+    new_uow.register_song(make_song("2.mp3"))
+    new_uow.register_song(make_song("3.mp3"))
+    new_uow.register_song(make_song("4.mp3"))
 
 
 def main() -> None:

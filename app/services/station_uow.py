@@ -113,28 +113,28 @@ class ThreadedStationUnitOfWork(AbstractStationUnitOfWork):
             album="test",
             artist="test",
             source="test_music/1.mp3",
-            id=song_id("test1")
+            id=song_id("1.mp3")
         ))
         new_queue.put(Song(
             title="test",
             album="test",
             artist="test",
             source="test_music/2.mp3",
-            id=song_id("test2")
+            id=song_id("2.mp3")
         ))
         new_queue.put(Song(
             title="test",
             album="test",
             artist="test",
             source="test_music/3.mp3",
-            id=song_id("test3")
+            id=song_id("3.mp3")
         ))
         new_queue.put(Song(
             title="test",
             album="test",
             artist="test",
             source="test_music/4.mp3",
-            id=song_id("test4")
+            id=song_id("4.mp3")
         ))
         new_events = StationEvents()
         new_conn = ShoutWrapper.from_station(new_station)

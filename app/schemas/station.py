@@ -11,6 +11,12 @@ class BroadcastServerBase(BaseModel):
     user: Optional[str] = None
     port: Optional[int] = None
 
+class BroadcastServer(BaseModel):
+    hostname: str
+    user: str
+    port: int
+
+
 
 # Shared properties
 class StationBase(BaseModel):
@@ -44,7 +50,8 @@ class StationInDBBase(StationBase):
 
 
 class Station(StationInDBBase):
-    pass
+    broadcastServer: BroadcastServer
+    station_url: str
 
 
 class StationInDB(StationInDBBase):
