@@ -2,7 +2,7 @@ from typing import List, Any
 
 from fastapi import APIRouter, Depends
 
-from app.models.domain_model import station_id, Station
+from app.models.domain_model import station_id, Station, song_id
 from app import schemas
 from app.services import station_services, user_services
 from app.services.station_uow import (
@@ -20,9 +20,6 @@ def get_all_station(
     station_uow: ThreadedStationUnitOfWork = Depends(get_thread_station_uow),
     current_user: User = Depends(user_services.get_current_user),
 ) -> List[Station]:
-    """
-    Retrieve users.
-    """
     stations = station_services.get_all_stations(station_uow)
     return stations
 
@@ -51,9 +48,6 @@ def create_station(
     station_uow: ThreadedStationUnitOfWork = Depends(get_thread_station_uow),
     current_user: User = Depends(user_services.get_current_user),
 ) -> Station:
-    """
-    Retrieve users.
-    """
     new_station = station_services.create_station(station_in, station_uow)
     return new_station
 
@@ -64,9 +58,6 @@ def delete_station(
     station_uow: ThreadedStationUnitOfWork = Depends(get_thread_station_uow),
     current_user: User = Depends(user_services.get_current_user),
 ) -> None:
-    """
-    Retrieve users.
-    """
     station_services.delete_station(station_id, station_uow)
 
 
@@ -76,7 +67,23 @@ def get_queue(
     station_uow: ThreadedStationUnitOfWork = Depends(get_thread_station_uow),
     current_user: User = Depends(user_services.get_current_user),
 ) -> List[Any]:
-    """
-    Retrieve users.
-    """
     return station_services.get_next_songs(station_id, station_uow)
+
+
+@router.put("/{station_id}/clear_queue")
+def clear_queue(
+    station_id: station_id,
+    station_uow: ThreadedStationUnitOfWork = Depends(get_thread_station_uow),
+    current_user: User = Depends(user_services.get_current_user),
+) -> int:
+    return station_services.clear_queue(station_id, station_uow)
+
+
+@router.post("/{station_id}/append_queue")
+def append_queue(
+    station_id: station_id,
+    song_id: song_id,
+    station_uow: ThreadedStationUnitOfWork = Depends(get_thread_station_uow),
+    current_user: User = Depends(user_services.get_current_user),
+):
+    station_services.append_queue(station_id, song_id, station_uow)

@@ -32,7 +32,6 @@ class BroadcastServer:
     hostname: str
     password: str
     user: str
-    # TODO: is there really no validator for port?
     port: int
 
 

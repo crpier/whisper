@@ -1,5 +1,5 @@
 from app.services.station_uow import ThreadedStationUnitOfWork
-from app.models.domain_model import Station, station_id
+from app.models.domain_model import Station, station_id, song_id
 from app import schemas
 from typing import List
 
@@ -40,3 +40,11 @@ def pause_station(station_id: station_id, uow: ThreadedStationUnitOfWork):
 def get_next_songs(station_id: station_id, uow: ThreadedStationUnitOfWork):
     with uow:
         return uow.get_next_songs(station_id)
+
+def clear_queue(station_id: station_id, uow: ThreadedStationUnitOfWork) -> int:
+    with uow:
+        return uow.clear_queue(station_id)
+
+def append_queue(station_id: station_id, song_id: song_id, uow: ThreadedStationUnitOfWork):
+    with uow:
+        return uow.append_queue(station_id, song_id)
