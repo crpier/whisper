@@ -1,6 +1,7 @@
-from typing import Generator
+from typing import Generator, List
 from app.adapters.song_repository import LocalDiskSongRepository
-from app.models.domain_model import song_id
+from app.models.domain_model import song_id, Song
+from functools import lru_cache
 
 
 class AbstractSongUow:
@@ -16,11 +17,14 @@ class InMemorySongUow(AbstractSongUow):
     def __exit__(self, *_):
         pass
 
+    def get_all_songs(self) -> List[Song]:
+        return self.repo.get_all_songs()
+
     def register_song(self, song):
         self.repo.add_song(song)
 
-    def get_song_data(self, song_id):
-        self.repo.get_song(song_id)
+    def get_song_data(self, song_id: song_id):
+        return self.repo.get_song(song_id)
 
     def stream_song_generator(
         self, song_id: song_id, bitrate: int
@@ -34,3 +38,9 @@ class InMemorySongUow(AbstractSongUow):
                 if len(buf) == 0:
                     break
                 yield buf
+
+
+@lru_cache
+def get_in_memory_song_uow() -> InMemorySongUow:
+    uow = InMemorySongUow()
+    return uow

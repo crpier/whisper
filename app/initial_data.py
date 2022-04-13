@@ -4,7 +4,7 @@ from app.core.config import settings
 from app.models.domain_model import Song, song_id
 from app.schemas.user import UserCreate  # noqa: F401
 from app.services import user_services
-from app.services.song_uow import InMemorySongUow
+from app.services.song_uow import get_in_memory_song_uow
 from app.services.user_uow import get_sqlalchemy_uow
 
 logging.basicConfig(level=logging.INFO)
@@ -34,7 +34,7 @@ def make_song(file_name: str):
 
 
 def init_in_memory_songs():
-    new_uow = InMemorySongUow()
+    new_uow = get_in_memory_song_uow()
     new_uow.register_song(make_song("1.mp3"))
     new_uow.register_song(make_song("2.mp3"))
     new_uow.register_song(make_song("3.mp3"))
