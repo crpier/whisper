@@ -65,9 +65,10 @@ filterwarnings = [
     "ignore::DeprecationWarning",
 ]
 markers = [
-  "unit: unit tests for commit stage",
-  "component: component tests that depend on services extenral to the python app but still in our codebase and deployment",
-  "celery: tests that require celery to be up and running"
+  "unit: self explanatory I think",
+  "component: self explanatory I think",
+  "e2e: self explanatory I think",
+  "celery: self explanatory I think"
 ]
 
 [tool.mypy]

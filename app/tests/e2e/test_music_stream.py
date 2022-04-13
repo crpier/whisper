@@ -62,6 +62,7 @@ def player(station: str):
     return player
 
 
+@pytest.mark.e2e
 def test_station_works(player):
     player.play()
     # sleep ensures vlc had time to connect
