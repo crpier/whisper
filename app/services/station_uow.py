@@ -1,12 +1,11 @@
 from dataclasses import dataclass
-from queue import Queue
+from queue import Empty, Queue
 from abc import ABC
 from functools import lru_cache
 from threading import Event, Thread
 from typing import Any, List
 from app.services.song_uow import InMemorySongUow
 import shout
-from pathlib import Path
 
 from app.adapters.station.repository import InMemoryStationRepository
 from app.models.domain_model import Station, station_id, State, Song, song_id
@@ -79,7 +78,7 @@ class StationMeta:
     thread: Thread
     conn: ShoutWrapper
     events: StationEvents
-    queue: Queue
+    queue: Queue[Song]
 
     def set_event(self, event_name: str):
         event: Event = getattr(self.events, event_name)
@@ -95,6 +94,19 @@ class StationMeta:
     def close_connection(self):
         self.conn.close()
 
+    def clear_queue(self):
+        cleared_count = 0
+        while not self.queue.empty():
+            try:
+                self.queue.get()
+                cleared_count += 1
+            except Empty:
+                pass
+        return cleared_count
+
+    def append_queue(self, song: Song):
+        self.queue.put(song)
+
 
 class ThreadedStationUnitOfWork(AbstractStationUnitOfWork):
     repo = InMemoryStationRepository[StationMeta]()
@@ -108,34 +120,42 @@ class ThreadedStationUnitOfWork(AbstractStationUnitOfWork):
 
     def create_station(self, new_station: Station):
         new_queue = Queue()
-        new_queue.put(Song(
-            title="test",
-            album="test",
-            artist="test",
-            source="test_music/1.mp3",
-            id=song_id("test1")
-        ))
-        new_queue.put(Song(
-            title="test",
-            album="test",
-            artist="test",
-            source="test_music/2.mp3",
-            id=song_id("test2")
-        ))
-        new_queue.put(Song(
-            title="test",
-            album="test",
-            artist="test",
-            source="test_music/3.mp3",
-            id=song_id("test3")
-        ))
-        new_queue.put(Song(
-            title="test",
-            album="test",
-            artist="test",
-            source="test_music/4.mp3",
-            id=song_id("test4")
-        ))
+        new_queue.put(
+            Song(
+                title="test",
+                album="test",
+                artist="test",
+                source="test_music/1.mp3",
+                id=song_id("1.mp3"),
+            )
+        )
+        new_queue.put(
+            Song(
+                title="test",
+                album="test",
+                artist="test",
+                source="test_music/2.mp3",
+                id=song_id("2.mp3"),
+            )
+        )
+        new_queue.put(
+            Song(
+                title="test",
+                album="test",
+                artist="test",
+                source="test_music/3.mp3",
+                id=song_id("3.mp3"),
+            )
+        )
+        new_queue.put(
+            Song(
+                title="test",
+                album="test",
+                artist="test",
+                source="test_music/4.mp3",
+                id=song_id("4.mp3"),
+            )
+        )
         new_events = StationEvents()
         new_conn = ShoutWrapper.from_station(new_station)
         new_thread = Thread(
@@ -200,6 +220,15 @@ class ThreadedStationUnitOfWork(AbstractStationUnitOfWork):
         station_meta = self.repo.get_meta(station_id)
         queue_as_list = list(station_meta.queue.queue)
         return queue_as_list
+
+    def clear_queue(self, station_id: station_id) -> int:
+        station_meta = self.repo.get_meta(station_id)
+        return station_meta.clear_queue()
+
+    def append_queue(self, station_id: station_id, song_id: song_id):
+        station_meta = self.repo.get_meta(station_id)
+        song = self.song_uow.get_song_data(song_id)
+        return station_meta.append_queue(song)
 
 
 @lru_cache

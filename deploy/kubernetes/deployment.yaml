@@ -35,3 +35,12 @@ spec:
         env:
           - name: FIRST_SUPERUSER_NAME
             value: admin
+          - name: SONGS_PATH
+            value: /var/song
+        volumeMounts:
+          - mountPath: /var/song/
+            name: song-volume
+      volumes:
+        - name: song-volume
+          persistentVolumeClaim:
+            claimName: song-pv-claim

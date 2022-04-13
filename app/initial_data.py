@@ -4,7 +4,7 @@ from app.core.config import settings
 from app.models.domain_model import Song, song_id
 from app.schemas.user import UserCreate  # noqa: F401
 from app.services import user_services
-from app.services.song_uow import InMemorySongUow
+from app.services.song_uow import get_in_memory_song_uow
 from app.services.user_uow import get_sqlalchemy_uow
 
 logging.basicConfig(level=logging.INFO)
@@ -23,45 +23,22 @@ def init() -> None:
         pass
 
 
-def init_in_memory_songs():
-    new_uow = InMemorySongUow()
+def make_song(file_name: str):
+    return Song(
+        title="name",
+        album="test",
+        artist="test",
+        source=f"{settings.SONGS_PATH}/{file_name}",
+        id=song_id(file_name),
+    )
 
-    new_uow.register_song(
-        Song(
-            title="test",
-            album="test",
-            artist="test",
-            source="test_music/1.mp3",
-            id=song_id("test1"),
-        )
-    )
-    new_uow.register_song(
-        Song(
-            title="test",
-            album="test",
-            artist="test",
-            source="test_music/2.mp3",
-            id=song_id("test2"),
-        )
-    )
-    new_uow.register_song(
-        Song(
-            title="test",
-            album="test",
-            artist="test",
-            source="test_music/3.mp3",
-            id=song_id("test3"),
-        )
-    )
-    new_uow.register_song(
-        Song(
-            title="test",
-            album="test",
-            artist="test",
-            source="test_music/4.mp3",
-            id=song_id("test4"),
-        )
-    )
+
+def init_in_memory_songs():
+    new_uow = get_in_memory_song_uow()
+    new_uow.register_song(make_song("1.mp3"))
+    new_uow.register_song(make_song("2.mp3"))
+    new_uow.register_song(make_song("3.mp3"))
+    new_uow.register_song(make_song("4.mp3"))
 
 
 def main() -> None:

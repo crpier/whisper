@@ -857,6 +857,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "python-vlc"
+version = "3.0.16120"
+description = "VLC bindings for python."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "pytz"
 version = "2022.1"
 description = "World timezone definitions, modern and historical"
@@ -1073,7 +1081,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "dead2b0144264984a0a7cec72978f0485a65043239dea4598c968d7edb58446c"
+content-hash = "7212ea14bd5668157495dc6eba88305018b74c9176525801ad39194d1d84d8ce"
 
 [metadata.files]
 alembic = [
@@ -1723,6 +1731,10 @@ python-multipart = [
 ]
 python-shout = [
     {file = "python-shout-0.2.7.tar.gz", hash = "sha256:ed6bace305689ab93cecd0c51fa607b712e18b01f54ba28a4d3f131d7d36350a"},
+]
+python-vlc = [
+    {file = "python-vlc-3.0.16120.tar.gz", hash = "sha256:92f98fee088f72bd6d063b3b3312d0bd29b37e7ad65ddeb3a7303320300c2807"},
+    {file = "python_vlc-3.0.16120-py3-none-any.whl", hash = "sha256:c409afb38fe9f788a663b4302ca583f31289ef0860ab2b1668da96bbe8f14bfc"},
 ]
 pytz = [
     {file = "pytz-2022.1-py2.py3-none-any.whl", hash = "sha256:e68985985296d9a66a881eb3193b0906246245294a881e7c8afe623866ac6a5c"},
