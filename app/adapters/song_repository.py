@@ -1,6 +1,6 @@
 from app.models.domain_model import Song, song_id
 from copy import deepcopy
-from typing import Dict
+from typing import Dict, List
 from abc import ABC
 
 
@@ -16,6 +16,9 @@ class LocalDiskSongRepository(AbstractSongRepository):
         if song is None:
             raise SongNotFound
         return deepcopy(song)
+
+    def get_all_songs(self) -> List[Song]:
+        return list(self._container.values())
 
     def add_song(self, song: Song) -> Song:
         # Is this really convoluted actually? Should I go to sleep instead?
