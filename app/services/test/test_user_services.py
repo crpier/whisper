@@ -1,5 +1,5 @@
 from pydantic.networks import EmailStr
-from pytest import fixture
+from pytest import fixture, mark
 from app.core.security import get_password_hash
 
 from app.services.user_uow import FakeUnitOfWork
@@ -21,6 +21,7 @@ class TestCreateUser:
             password="securepassword",
         )
 
+    @mark.component
     def test_password_is_not_added_as_is(
         self, fake_uow: FakeUnitOfWork, normal_user: UserCreate
     ):

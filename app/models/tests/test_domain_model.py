@@ -10,6 +10,8 @@ def get_test_song(name_part: Any):
         title=f"test_title_{name_part}",
         album=f"test_album_{name_part}",
         artist=f"test_artist_{name_part}",
+        id=song_id(f"test_id_{name_part}"),
+        source=f"/test/source/{name_part}",
     )
     return new_song
 
@@ -17,7 +19,11 @@ def get_test_song(name_part: Any):
 @fixture
 def base_song():
     new_song = Song(
-        title="test_title", album="test_album", artist="test_artist"
+        title="test_title",
+        album="test_album",
+        artist="test_artist",
+        id=song_id("test_id"),
+        source="/test/source",
     )
     return new_song
 
@@ -48,16 +54,14 @@ def station_with_playlist():
         bitrate=1024,
         name="test",
         broadcastServer=BroadcastServer(
-            hostname="test",
-            user="test",
-            password="test_pass",
-            port=1234
-        )
+            hostname="test", user="test", password="test_pass", port=1234
+        ),
     )
     return new_station
 
 
 @mark.skip("Not Implemented")
+@mark.unit
 def test_station_after_start_streaming_is_running(station_with_playlist):
     station_with_playlist.start_streaming()
     assert station_with_playlist.running == True

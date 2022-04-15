@@ -1,6 +1,6 @@
 from typing import Generator
 from pydantic.networks import EmailStr
-from pytest import fixture
+from pytest import fixture, mark
 
 from app.adapters.user.repository import SqlAlchemyUserRepository
 from app.models.domain_model import User
@@ -44,6 +44,7 @@ def normal_user(
         uow.commit()
 
 
+@mark.component
 def test_get_by_email(normal_user: User, repository: SqlAlchemyUserRepository):
     actual_user = repository.get_by_email(normal_user.email)
     assert normal_user.__dict__ == actual_user.__dict__
