@@ -18,10 +18,6 @@ from app.services import user_services
 
 router = APIRouter()
 
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
-
-
 @router.post("/login/access-token", response_model=schemas.Token)
 def login_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -30,13 +26,12 @@ def login_access_token(
     """
     OAuth2 compatible token login, get an access token for future requests
     """
-    logger.debug("form data: %s", form_data)
     user_id = user_services.authenticate(
         email=form_data.username, password=form_data.password, uow=user_uow
     )
     if not user_id:
         raise HTTPException(
-            status_code=400, detail="Incorrect email or password"
+            status_code=401, detail="Incorrect email or password"
         )
     return {
         "access_token": security.create_access_token(user_id),
