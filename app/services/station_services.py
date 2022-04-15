@@ -11,8 +11,6 @@ def create_station(
         new_station = Station(**create_in.__dict__)
         uow.create_station(new_station)
         uow.play_station(new_station.id)
-        station_url = f"http://{new_station.broadcastServer.hostname}:{new_station.broadcastServer.port}/{new_station.id}"
-        new_station.station_url = station_url  # type: ignore
         return new_station
 
 

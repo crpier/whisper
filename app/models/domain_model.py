@@ -66,6 +66,12 @@ class Station:
     def set_state(self, state: State):
         self.state = state
 
+    @property
+    def station_url(self):
+        url = f"http://{self.broadcastServer.hostname}:{self.broadcastServer.port}/{self.id}"
+        return url
+
+
 @dataclass(frozen=True)
 class TierType:
     max_stations: int
