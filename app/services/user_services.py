@@ -25,6 +25,7 @@ reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
 )
 
+
 def create_user(
     create_obj: user_schema.UserCreate, uow: user_uow.AbstractUnitOfWork
 ) -> User:
@@ -42,7 +43,7 @@ def create_user(
             created_user = uow.users.get_by_id(new_id)
             assert created_user
     except IntegrityError:
-        raise DuplicateException
+        raise UserAlreadyExists(new_user.name)
     return created_user
 
 
@@ -62,7 +63,7 @@ def get_user_by_id(
     with uow:
         user = uow.users.get_one_by(id=id)
         if not user:
-            return
+            raise UserNotFound(id)
         return user
 
 
@@ -95,12 +96,12 @@ def get_current_user(
         )
         token_data = schemas.TokenPayload(**payload)
     except (jwt.JWTError, ValidationError):
-        raise InvalidCredentials
+        raise InvalidToken
     with uow:
         id = user_id(str(token_data.sub))
         user = uow.users.get_by_id(id)
         if not user:
-            raise UserNotFound
+            raise UserNotFound(id)
         return_user = schemas.User(**user.__dict__)
         uow.commit()
     return return_user
@@ -113,13 +114,16 @@ def change_user_tier(
 ):
     raise NotImplementedError
 
-class InvalidCredentials(BaseException):
+
+class InvalidToken(Exception):
     pass
 
 
-class UserNotFound(BaseException):
-    pass
+class UserNotFound(Exception):
+    def __init__(self, user: str):
+        self.user = user
 
 
-class DuplicateException(BaseException):
-    pass
+class UserAlreadyExists(Exception):
+    def __init__(self, user_name: str):
+        self.user_name = user_name

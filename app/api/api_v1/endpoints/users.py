@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Optional
 
 from fastapi.encoders import jsonable_encoder
 from fastapi import APIRouter, Body, Depends, HTTPException
@@ -36,7 +36,7 @@ def create_user(
     """
     try:
         user = user_services.create_user(user_in, user_uow)
-    except user_services.DuplicateException:
+    except user_services.UserAlreadyExists:
         raise HTTPException(
             status_code=400,
             detail="The user with this username already exists in the system.",
@@ -117,7 +117,7 @@ def read_user_by_id(
     user_id: user_id,
     user_uow: SqlAlchemyUnitOfWork = Depends(get_sqlalchemy_uow),
     current_user: User = Depends(user_services.get_current_user),
-) -> Any:
+) -> Optional[User]:
     """
     Get a specific user by id.
     """

@@ -19,7 +19,7 @@ def init() -> None:
     )
     try:
         user_services.create_user(create_obj=user_in, uow=get_sqlalchemy_uow())
-    except user_services.DuplicateException:
+    except user_services.UserAlreadyExists:
         pass
 
 
